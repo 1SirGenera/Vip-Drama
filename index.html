@@ -9,9 +9,9 @@
 <body>
 <header class="topbar"><a class="brand" href="index.html"><span>VIP</span> Drama</a><nav>
 <a class="active" href="#home">الرئيسية</a><a href="#movies">الأفلام</a><a href="#series">المسلسلات</a><a href="#anime">الأنمي</a><a href="#contact">تواصل</a>
-</nav><button class="search-btn" id="searchOpen" aria-label="بحث">⌕</button></header>
+</nav><div class="top-actions"><a class="account-btn" id="accountBtn" href="login.html">👤 تسجيل الدخول</a><button class="search-btn" id="searchOpen" aria-label="بحث">⌕</button></div></header>
 <main id="home">
-<section class="hero"><div class="hero-copy"><span class="eyebrow">VIP DRAMA</span><h1>كل قصة تستحق<br><b>شاشة كبيرة.</b></h1><p>اكتشف عناوين جديدة، تصفح حسب النوع، وابنِ قائمتك الخاصة بطريقة سريعة وأنيقة.</p><div class="hero-actions"><a class="btn primary" href="#latest">استكشف الآن</a><a class="btn ghost" href="#contact">تواصل معنا</a></div></div><div class="hero-art"><div class="hero-glow"></div><div class="hero-card"><span>NEW</span><strong>اختيارات<br>هذا الأسبوع</strong><small>أفلام • مسلسلات • أنمي</small></div></div></section>
+<section class="hero"><div class="hero-copy"><span class="eyebrow">VIP DRAMA</span><h1>كل قصة تستحق<br><b>شاشة كبيرة.</b></h1><p>اكتشف عناوين جديدة، تصفح حسب النوع، وابنِ قائمتك الخاصة بطريقة سريعة وأنيقة.</p><div class="hero-actions"><a class="btn primary" href="#latest">استكشف الآن</a><a class="btn ghost" href="login.html">👤 حسابي</a></div></div><div class="hero-art"><div class="hero-glow"></div><div class="hero-card"><span>NEW</span><strong>اختيارات<br>هذا الأسبوع</strong><small>أفلام • مسلسلات • أنمي</small></div></div></section>
 <section class="section" id="latest"><div class="section-head"><div><span class="eyebrow">محتوى مختار</span><h2>الأحدث</h2></div><button class="filter-chip active" data-filter="all">الكل</button></div><div class="grid" id="latestGrid"></div></section>
 <section class="section" id="movies"><div class="section-head"><div><span class="eyebrow">MOVIES</span><h2>أفلام</h2></div></div><div class="grid" id="moviesGrid"></div></section>
 <section class="section" id="series"><div class="section-head"><div><span class="eyebrow">SERIES</span><h2>مسلسلات</h2></div></div><div class="grid" id="seriesGrid"></div></section>
@@ -20,5 +20,5 @@
 </main>
 <footer><span>© 2026 VIP Drama</span><span>جميع الحقوق محفوظة لأصحابها. استخدم المنصة لعرض المحتوى المصرح به فقط.</span><a href="admin.html">لوحة الإدارة</a></footer>
 <div class="modal" id="searchModal"><div class="modal-box"><button class="close" id="searchClose">×</button><h3>بحث في المكتبة</h3><input id="searchInput" placeholder="اكتب اسم فيلم أو مسلسل..." autofocus><div id="searchResults"></div></div></div>
-<script src="data.js"></script><script src="app.js"></script>
+<script src="data.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="app.js"></script>
 </body></html>
