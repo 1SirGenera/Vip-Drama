@@ -1,0 +1,8 @@
+const $=s=>document.querySelector(s);
+function card(x){return `<article class="card"><div class="poster" style="background:${x.poster}"><span class="tag">${x.tag}</span><span class="rating">★ ${x.rating}</span><div class="poster-title">${x.title}</div></div><div class="card-info"><div><h3>${x.title}</h3><p>${x.genre} • ${x.year}</p></div><button class="play" onclick="openTitle(${x.id})">▶</button></div></article>`}
+function render(id,items){$(id).innerHTML=items.map(card).join('')}
+const all=JSON.parse(localStorage.getItem('vip_content')||'null')||window.VIP_CONTENT;
+render('#latestGrid',all.slice(0,6)); render('#moviesGrid',all.filter(x=>x.type==='movie')); render('#seriesGrid',all.filter(x=>x.type==='series')); render('#animeGrid',all.filter(x=>x.type==='anime'));
+window.openTitle=id=>{const x=all.find(v=>v.id===id); if(!x)return; alert(`${x.title}\n\n${x.description}\n\nالتصنيف: ${x.genre} | التقييم: ★ ${x.rating}\n\nهذه واجهة عرض تجريبية. أضف رابط المشاهدة من لوحة الإدارة عند توفر المحتوى المرخّص.`)};
+const modal=$('#searchModal'); $('#searchOpen').onclick=()=>{modal.classList.add('show');$('#searchInput').focus()}; $('#searchClose').onclick=()=>modal.classList.remove('show');
+$('#searchInput').oninput=e=>{const q=e.target.value.trim().toLowerCase(); $('#searchResults').innerHTML=q?all.filter(x=>x.title.toLowerCase().includes(q)||x.genre.includes(q)).map(card).join(''):'<p class="muted">ابدأ بكتابة اسم العنوان أو النوع.</p>'};
