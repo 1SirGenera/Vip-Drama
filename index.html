@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090b12"><meta name="description" content="VIP Drama — منصة عربية أنيقة لاكتشاف الأفلام والمسلسلات والأنمي.">
+<title>VIP Drama — أفلام ومسلسلات</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="index.html"><span>VIP</span> Drama</a><nav>
+<a class="active" href="#home">الرئيسية</a><a href="#movies">الأفلام</a><a href="#series">المسلسلات</a><a href="#anime">الأنمي</a><a href="#contact">تواصل</a>
+</nav><button class="search-btn" id="searchOpen" aria-label="بحث">⌕</button></header>
+<main id="home">
+<section class="hero"><div class="hero-copy"><span class="eyebrow">VIP DRAMA</span><h1>كل قصة تستحق<br><b>شاشة كبيرة.</b></h1><p>اكتشف عناوين جديدة، تصفح حسب النوع، وابنِ قائمتك الخاصة بطريقة سريعة وأنيقة.</p><div class="hero-actions"><a class="btn primary" href="#latest">استكشف الآن</a><a class="btn ghost" href="#contact">تواصل معنا</a></div></div><div class="hero-art"><div class="hero-glow"></div><div class="hero-card"><span>NEW</span><strong>اختيارات<br>هذا الأسبوع</strong><small>أفلام • مسلسلات • أنمي</small></div></div></section>
+<section class="section" id="latest"><div class="section-head"><div><span class="eyebrow">محتوى مختار</span><h2>الأحدث</h2></div><button class="filter-chip active" data-filter="all">الكل</button></div><div class="grid" id="latestGrid"></div></section>
+<section class="section" id="movies"><div class="section-head"><div><span class="eyebrow">MOVIES</span><h2>أفلام</h2></div></div><div class="grid" id="moviesGrid"></div></section>
+<section class="section" id="series"><div class="section-head"><div><span class="eyebrow">SERIES</span><h2>مسلسلات</h2></div></div><div class="grid" id="seriesGrid"></div></section>
+<section class="section" id="anime"><div class="section-head"><div><span class="eyebrow">ANIME</span><h2>أنمي</h2></div></div><div class="grid" id="animeGrid"></div></section>
+<section class="contact section" id="contact"><div><span class="eyebrow">CONTACT</span><h2>لديك اقتراح أو استفسار؟</h2><p>راسل فريق VIP Drama مباشرة عبر البريد الإلكتروني.</p></div><a class="btn primary" href="mailto:abwfdytan@gmail.com?subject=رسالة%20من%20VIP%20Drama">إرسال رسالة</a></section>
+</main>
+<footer><span>© 2026 VIP Drama</span><span>جميع الحقوق محفوظة لأصحابها. استخدم المنصة لعرض المحتوى المصرح به فقط.</span><a href="admin.html">لوحة الإدارة</a></footer>
+<div class="modal" id="searchModal"><div class="modal-box"><button class="close" id="searchClose">×</button><h3>بحث في المكتبة</h3><input id="searchInput" placeholder="اكتب اسم فيلم أو مسلسل..." autofocus><div id="searchResults"></div></div></div>
+<script src="data.js"></script><script src="app.js"></script>
+</body></html>
