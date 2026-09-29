@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090b12"><title>تسجيل الدخول — VIP Drama</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="auth-page">
+<main class="auth-wrap">
+  <a class="brand auth-brand" href="index.html"><span>VIP</span> Drama</a>
+  <section class="auth-card">
+    <div id="loginBox">
+      <span class="eyebrow">VIP DRAMA</span><h1>تسجيل الدخول</h1><p class="auth-sub">ادخل إلى حسابك لمتابعة تجربتك.</p>
+      <form id="loginForm" class="auth-form">
+        <label>البريد الإلكتروني<input name="email" type="email" autocomplete="email" required placeholder="name@example.com"></label>
+        <label>كلمة المرور<input name="password" type="password" autocomplete="current-password" required placeholder="••••••••"></label>
+        <button class="btn primary auth-submit" type="submit">تسجيل الدخول</button>
+      </form>
+      <p class="auth-switch">ليس لديك حساب؟ <a href="#" id="switchRegister">إنشاء حساب</a></p>
+    </div>
+    <div id="registerBox" hidden>
+      <span class="eyebrow">NEW ACCOUNT</span><h1>إنشاء حساب</h1><p class="auth-sub">أنشئ حسابك في VIP Drama.</p>
+      <form id="registerForm" class="auth-form">
+        <label>الاسم<input name="name" type="text" autocomplete="name" required placeholder="اسمك"></label>
+        <label>البريد الإلكتروني<input name="email" type="email" autocomplete="email" required placeholder="name@example.com"></label>
+        <label>كلمة المرور<input name="password" type="password" autocomplete="new-password" minlength="6" required placeholder="6 أحرف على الأقل"></label>
+        <button class="btn primary auth-submit" type="submit">إنشاء الحساب</button>
+      </form>
+      <p class="auth-switch">لديك حساب؟ <a href="#" id="switchLogin">تسجيل الدخول</a></p>
+    </div>
+    <div id="accountBox" hidden class="account-box"><span class="eyebrow">ACCOUNT</span><h1>أهلاً بك 👋</h1><p>أنت مسجل الدخول بواسطة:</p><strong id="accountEmail"></strong><button id="logoutBtn" class="btn ghost auth-submit">تسجيل الخروج</button></div>
+    <div id="authMessage" class="auth-message"></div>
+  </section>
+  <a class="back-home" href="index.html">← العودة إلى الموقع</a>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script><script src="auth.js"></script>
+</body></html>
