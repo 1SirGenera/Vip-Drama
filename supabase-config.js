@@ -1,4 +1,5 @@
-// ضع هنا بيانات مشروع Supabase الخاص بك.
-// استخدم Publishable key / anon key فقط في الواجهة العامة، ولا تضع service_role هنا.
-window.SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
-window.SUPABASE_PUBLISHABLE_KEY = "YOUR-PUBLISHABLE-KEY";
+// Supabase public client configuration.
+// Publishable keys are intended for browser/public code.
+// Never place a Supabase secret/service_role key here.
+window.SUPABASE_URL = "https://bwciwbrbnvvokwejeyfh.supabase.co";
+window.SUPABASE_PUBLISHABLE_KEY = "sb_publishable_6jwivY5Sjc8b0bVf-abNGw_g7YkqVDc";
