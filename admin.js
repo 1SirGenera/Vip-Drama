@@ -21,10 +21,11 @@ function refresh(){
   $('#count').textContent=items.length;
   $('#movies').textContent=items.filter(x=>x.type==='movie').length;
   $('#others').textContent=items.filter(x=>x.type!=='movie').length;
-  $('#rows').innerHTML=items.map(x=>`<tr><td>${escapeHtml(x.title)}</td><td>${x.type==='movie'?'فيلم':x.type==='series'?'مسلسل':'أنمي'}</td><td>${x.year||''}</td><td><button class="btn danger" onclick="removeItem(${x.id})">حذف</button></td></tr>`).join('');
+  $('#views').textContent=items.reduce((sum,x)=>sum+Number(x.view_count||0),0).toLocaleString('ar-SA');
+  $('#rows').innerHTML=items.map(x=>`<tr><td>${escapeHtml(x.title)}</td><td>${x.type==='movie'?'فيلم':x.type==='series'?'مسلسل':'أنمي'}</td><td>${x.year||''}</td><td>👁 ${Number(x.view_count||0).toLocaleString("ar-SA")}</td><td><button class="btn danger" onclick="removeItem(${x.id})">حذف</button></td></tr>`).join('');
 }
 function escapeHtml(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
-function fail(msg){$('#rows').innerHTML=`<tr><td colspan="4">${escapeHtml(msg)}</td></tr>`;const n=document.querySelector('.notice');if(n)n.textContent=msg;}
+function fail(msg){$('#rows').innerHTML=`<tr><td colspan="5">${escapeHtml(msg)}</td></tr>`;const n=document.querySelector('.notice');if(n)n.textContent=msg;}
 window.removeItem=async id=>{
   if(!confirm('هل تريد حذف هذا العنوان؟'))return;
   const {error}=await client.from('vip_content').delete().eq('id',id);
