@@ -3,27 +3,9 @@ function card(x){return `<article class="card"><div class="poster" style="backgr
 function render(id,items){$(id).innerHTML=items.map(card).join('')}
 const all=JSON.parse(localStorage.getItem('vip_content')||'null')||window.VIP_CONTENT;
 render('#latestGrid',all.slice(0,6)); render('#moviesGrid',all.filter(x=>x.type==='movie')); render('#seriesGrid',all.filter(x=>x.type==='series')); render('#animeGrid',all.filter(x=>x.type==='anime'));
-window.openTitle=id=>{const x=all.find(v=>v.id===id); if(!x)return; alert(`${x.title}\n\n${x.description}\n\nالتصنيف: ${x.genre} | التقييم: ★ ${x.rating}\n\nهذه واجهة عرض تجريبية. أضف رابط المشاهدة من لوحة الإدارة عند توفر المحتوى المرخّص.`)};
-const modal=$('#searchModal'); $('#searchOpen').onclick=()=>{modal.classList.add('show');$('#searchInput').focus()}; $('#searchClose').onclick=()=>modal.classList.remove('show');
-$('#searchInput').oninput=e=>{const q=e.target.value.trim().toLowerCase(); $('#searchResults').innerHTML=q?all.filter(x=>x.title.toLowerCase().includes(q)||x.genre.includes(q)).map(card).join(''):'<p class="muted">ابدأ بكتابة اسم العنوان أو النوع.</p>'};
-
-async function setupAccountButton(){
-  const btn=$('#accountBtn');
-  if(!btn || !window.supabase || !window.SUPABASE_URL || window.SUPABASE_URL.includes('YOUR-PROJECT')) return;
-  const client=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
-  const {data:{session}}=await client.auth.getSession();
-  updateAccountButton(btn,session);
-  client.auth.onAuthStateChange((_event,newSession)=>updateAccountButton(btn,newSession));
-}
-function updateAccountButton(btn,session){
-  if(session){
-    btn.textContent='👤 حسابي';
-    btn.href='login.html';
-    btn.classList.add('logged-in');
-  }else{
-    btn.textContent='👤 تسجيل الدخول';
-    btn.href='login.html';
-    btn.classList.remove('logged-in');
-  }
-}
+window.openTitle=id=>{const x=all.find(v=>v.id===id);if(!x)return;const ok=confirm(`${x.title}\n\n${x.description}\n\nالترخيص: ${x.license}\nالمصدر: ${x.source}\n\nهل تريد فتح مصدر المشاهدة الرسمي/المتاح؟`);if(ok&&x.watchUrl)window.open(x.watchUrl,'_blank','noopener,noreferrer')};
+const modal=$('#searchModal');$('#searchOpen').onclick=()=>{modal.classList.add('show');$('#searchInput').focus()};$('#searchClose').onclick=()=>modal.classList.remove('show');
+$('#searchInput').oninput=e=>{const q=e.target.value.trim().toLowerCase();$('#searchResults').innerHTML=q?all.filter(x=>x.title.toLowerCase().includes(q)||x.genre.includes(q)).map(card).join(''):'<p class="muted">ابدأ بكتابة اسم العنوان أو النوع.</p>'};
+async function setupAccountButton(){const btn=$('#accountBtn');if(!btn||!window.supabase||!window.SUPABASE_URL||window.SUPABASE_URL.includes('YOUR-PROJECT'))return;const client=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});const {data:{session}}=await client.auth.getSession();updateAccountButton(btn,session);client.auth.onAuthStateChange((_event,newSession)=>updateAccountButton(btn,newSession))}
+function updateAccountButton(btn,session){if(session){btn.textContent='👤 حسابي';btn.href='login.html';btn.classList.add('logged-in')}else{btn.textContent='👤 تسجيل الدخول';btn.href='login.html';btn.classList.remove('logged-in')}}
 setupAccountButton();
