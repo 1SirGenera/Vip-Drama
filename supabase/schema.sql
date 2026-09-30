@@ -72,7 +72,27 @@ insert into public.vip_content (title,type,year,genre,rating,tag,description,pos
 select 'Tears of Steel','movie',2012,'خيال علمي',7.7,'مرخّص مفتوح','فيلم مفتوح من Blender Institute؛ راجع شروط كل مادة قبل إعادة الاستخدام.','linear-gradient(145deg,#082f49,#0891b2)','https://mango.blender.org/','Creative Commons (راجع صفحة المشروع)','Blender Foundation'
 where not exists (select 1 from public.vip_content where title='Tears of Steel');
 
- 
+
+insert into public.vip_content (title,type,year,genre,rating,tag,description,poster,embed_url,license,source)
+select 'Spring','movie',2019,'فانتازيا • رسوم متحركة',0,'مرخّص CC BY 4.0','فيلم رسوم متحركة قصير من Blender Animation Studio، منشور وفق Creative Commons Attribution 4.0 مع متطلبات النسب.','linear-gradient(145deg,#14532d,#84cc16)','https://studio.blender.org/projects/spring/','Creative Commons Attribution 4.0','Blender Studio'
+where not exists (select 1 from public.vip_content where title='Spring');
+
+insert into public.vip_content (title,type,year,genre,rating,tag,description,poster,embed_url,license,source)
+select 'Cosmos Laundromat: First Cycle','movie',2015,'خيال • رسوم متحركة',0,'مفتوح ومرخّص','الحلقة الأولى من مشروع Blender Open Movie، متاحة للمشاركة وإعادة المزج وفق الترخيص المعلن للمشروع.','linear-gradient(145deg,#312e81,#f97316)','https://studio.blender.org/projects/cosmos-laundromat/','Creative Commons / permissive license حسب مادة المشروع','Blender Studio'
+where not exists (select 1 from public.vip_content where title='Cosmos Laundromat: First Cycle');
+
+insert into public.vip_content (title,type,year,genre,rating,tag,description,poster,embed_url,license,source)
+select 'Charge','movie',2022,'خيال علمي • أكشن',0,'مرخّص CC BY 4.0','فيلم Blender Open Movie قصير في عالم مستقبلي يعاني من نقص الطاقة؛ محتوى Blender Studio الرقمي متاح عمومًا وفق CC BY ما لم يذكر خلاف ذلك.','linear-gradient(145deg,#111827,#dc2626)','https://studio.blender.org/projects/charge/','Creative Commons Attribution 4.0 (ما لم يذكر خلاف ذلك)','Blender Studio'
+where not exists (select 1 from public.vip_content where title='Charge');
+
+insert into public.vip_content (title,type,year,genre,rating,tag,description,poster,embed_url,license,source)
+select 'Sprite Fright','movie',2021,'رعب كوميدي • رسوم متحركة',0,'مرخّص CC BY','فيلم Blender Open Movie بطابع رعب كوميدي، ومشروعه منشور وفق Creative Commons Attribution مع استثناءات موضحة في صفحة الترخيص.','linear-gradient(145deg,#3f0d12,#16a34a)','https://studio.blender.org/projects/sprite-fright/','Creative Commons Attribution 1.0','Blender Studio'
+where not exists (select 1 from public.vip_content where title='Sprite Fright');
+
+insert into public.vip_content (title,type,year,genre,rating,tag,description,poster,embed_url,license,source)
+select 'Wing It!','movie',2023,'كوميديا • رسوم متحركة',0,'مرخّص CC BY 4.0','فيلم Blender Open Movie قصير؛ صفحة الترخيص الرسمية تسمح بإعادة الاستخدام والتوزيع مع النسب.','linear-gradient(145deg,#0f172a,#f59e0b)','https://studio.blender.org/projects/wing-it/','Creative Commons Attribution 4.0','Blender Studio'
+where not exists (select 1 from public.vip_content where title='Wing It!');
+
 -- Privacy-friendly view counter: no IP address is stored.
 alter table public.vip_content
   add column if not exists view_count bigint not null default 0;
