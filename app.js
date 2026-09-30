@@ -41,7 +41,7 @@ window.openTitle=id=>{
   $('#playerTitle').textContent=x.title;
   $('#playerMeta').textContent=x.genre+' • '+x.year+'  |  '+(x.license||'الترخيص غير محدد')+'  |  👁 '+Number(x.view_count||0).toLocaleString('ar-SA')+' مشاهدة';
   $('#playerDesc').textContent=x.description||'';
-  $('#playerSource').textContent=x.source?\`المصدر: ${x.source}\`:'';
+  $('#playerSource').textContent=x.source?`المصدر: ${x.source}`:'';
   $('#playerStage').innerHTML=playerMarkup(x);
   $('#playerModal').classList.add('show');
   document.body.classList.add('player-open');
