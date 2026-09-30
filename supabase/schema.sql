@@ -71,3 +71,29 @@ where not exists (select 1 from public.vip_content where title='Elephants Dream'
 insert into public.vip_content (title,type,year,genre,rating,tag,description,poster,embed_url,license,source)
 select 'Tears of Steel','movie',2012,'خيال علمي',7.7,'مرخّص مفتوح','فيلم مفتوح من Blender Institute؛ راجع شروط كل مادة قبل إعادة الاستخدام.','linear-gradient(145deg,#082f49,#0891b2)','https://mango.blender.org/','Creative Commons (راجع صفحة المشروع)','Blender Foundation'
 where not exists (select 1 from public.vip_content where title='Tears of Steel');
+
+ 
+-- Privacy-friendly view counter: no IP address is stored.
+alter table public.vip_content
+  add column if not exists view_count bigint not null default 0;
+
+create or replace function public.record_view(p_content_id bigint)
+returns bigint
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  new_count bigint;
+begin
+  update public.vip_content
+  set view_count = view_count + 1,
+      updated_at = now()
+  where id = p_content_id
+  returning view_count into new_count;
+  return coalesce(new_count, 0);
+end;
+$$;
+
+revoke execute on function public.record_view(bigint) from public;
+grant execute on function public.record_view(bigint) to anon, authenticated;
