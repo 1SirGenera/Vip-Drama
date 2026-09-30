@@ -20,11 +20,20 @@ function mergeContent(dbRows){
   const dbIds=new Set(merged.map(x=>Number(x.id)));
   return [...merged,...window.VIP_CONTENT.filter(x=>!dbIds.has(Number(x.id)))];
 }
+function normalizeType(value){
+  const t=String(value||'').trim().toLowerCase();
+  if(['movie','movies','film','films','فيلم','أفلام'].includes(t))return 'movie';
+  if(['series','serie','tv','show','shows','مسلسل','مسلسلات'].includes(t))return 'series';
+  if(['anime','animation','cartoon','أنمي','انمي','رسوم متحركة'].includes(t))return 'anime';
+  return t;
+}
+function normalizeItem(x){return {...x,type:normalizeType(x.type)}}
 function renderAll(){
+  all=all.map(normalizeItem);
   render('#latestGrid',all.slice(0,6));
-  render('#moviesGrid',all.filter(x=>x.type==='movie'));
-  render('#seriesGrid',all.filter(x=>x.type==='series'));
-  render('#animeGrid',all.filter(x=>x.type==='anime'));
+  render('#moviesGrid',all.filter(x=>normalizeType(x.type)==='movie'));
+  render('#seriesGrid',all.filter(x=>normalizeType(x.type)==='series'));
+  render('#animeGrid',all.filter(x=>normalizeType(x.type)==='anime'));
 }
 async function loadContent(){
   if(!window.supabase||!window.SUPABASE_URL||!window.SUPABASE_PUBLISHABLE_KEY){renderAll();return}
@@ -55,6 +64,7 @@ async function recordView(x){
 function playerMarkup(x){
   if(x.videoUrl)return `<video class="site-video" controls autoplay playsinline preload="metadata" src="${x.videoUrl}"></video>`;
   if(x.embedUrl)return `<iframe class="site-frame" src="${x.embedUrl}" title="${x.title}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+  if(x.watchUrl)return `<iframe class="site-frame" src="${x.watchUrl}" title="${x.title}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
   return `<div class="player-empty"><div class="player-icon">▶</div><h3>المشاهدة داخل VIP Drama</h3><p>هذا العنوان لا يملك حالياً رابط فيديو مباشر أو تضميناً رسمياً يمكن تشغيله داخل الموقع. لن يتم تحويل المشاهد إلى موقع آخر.</p><small>أضف videoUrl أو embedUrl من لوحة الإدارة للمحتوى الذي تملك حق عرضه.</small></div>`;
 }
 window.openTitle=id=>{
