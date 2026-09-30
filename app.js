@@ -60,9 +60,26 @@ async function loadContent(){
 function playerMarkup(x){
   const video=normalizeUrl(x.videoUrl);
   const embed=normalizeUrl(x.embedUrl);
-  if(video)return '<video class="site-video" controls playsinline preload="metadata" src="'+esc(video)+'"><p>المتصفح لا يدعم تشغيل الفيديو.</p></video>';
+  if(video)return '<div class="vip-player"><video id="vipVideo" class="site-video" playsinline preload="metadata" src="'+esc(video)+'"><p>المتصفح لا يدعم تشغيل الفيديو.</p></video><div class="vip-controls"><button type="button" data-act="play" title="تشغيل/إيقاف">▶</button><button type="button" data-act="back" title="رجوع 10 ثوانٍ">↶ 10</button><button type="button" data-act="forward" title="تقديم 10 ثوانٍ">10 ↷</button><button type="button" data-act="mute" title="كتم الصوت">🔊</button><input data-act="volume" class="vip-volume" type="range" min="0" max="1" step="0.05" value="1" aria-label="مستوى الصوت"><button type="button" data-act="zoomout" title="تصغير">−</button><span data-zoom>100%</span><button type="button" data-act="zoomin" title="تكبير">+</button><button type="button" data-act="fullscreen" title="ملء الشاشة">⛶</button></div></div>';
   if(embed)return '<iframe class="site-frame" src="'+esc(embed)+'" title="'+esc(x.title)+'" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>';
   return '<div class="player-empty"><div class="player-icon">▶</div><h3>المشاهدة داخل VIP Drama</h3><p>لا يوجد حالياً رابط فيديو مباشر أو تضمين رسمي صالح لهذا العنوان.</p><small>من لوحة الإدارة أضف رابط MP4/WebM مباشر أو رابط Embed رسمي للمحتوى الذي تملك حق عرضه.</small></div>';
+}
+function setupVipPlayer(){
+  const wrap=$('#playerStage .vip-player'),v=$('#vipVideo');if(!wrap||!v)return;
+  let zoom=1;
+  const play=wrap.querySelector('[data-act="play"]'),mute=wrap.querySelector('[data-act="mute"]'),vol=wrap.querySelector('[data-act="volume"]'),z=wrap.querySelector('[data-zoom]');
+  const setPlay=()=>{play.textContent=v.paused?'▶':'❚❚';};
+  play.onclick=()=>{if(v.paused)v.play().catch(()=>{});else v.pause();};
+  v.addEventListener('play',setPlay);v.addEventListener('pause',setPlay);setPlay();
+  wrap.querySelector('[data-act="back"]').onclick=()=>{v.currentTime=Math.max(0,v.currentTime-10)};
+  wrap.querySelector('[data-act="forward"]').onclick=()=>{v.currentTime=Math.min(v.duration||Infinity,v.currentTime+10)};
+  mute.onclick=()=>{v.muted=!v.muted;mute.textContent=v.muted?'🔇':'🔊';};
+  vol.oninput=()=>{v.volume=Number(vol.value);v.muted=v.volume===0;mute.textContent=v.muted?'🔇':'🔊';};
+  const applyZoom=()=>{v.style.transform='scale('+zoom+')';z.textContent=Math.round(zoom*100)+'%';};
+  wrap.querySelector('[data-act="zoomout"]').onclick=()=>{zoom=Math.max(.8,Math.round((zoom-.1)*10)/10);applyZoom();};
+  wrap.querySelector('[data-act="zoomin"]').onclick=()=>{zoom=Math.min(1.5,Math.round((zoom+.1)*10)/10);applyZoom();};
+  wrap.querySelector('[data-act="fullscreen"]').onclick=()=>{const target=wrap;if(document.fullscreenElement)document.exitFullscreen?.();else target.requestFullscreen?.();};
+  applyZoom();
 }
 
 async function recordView(x){
@@ -91,6 +108,7 @@ window.openTitle=id=>{
   $('#playerStage').innerHTML=playerMarkup(x);
   $('#playerModal').classList.add('show');
   document.body.classList.add('player-open');
+  setupVipPlayer();
   const media=$('#playerStage .site-video');
   if(media){
     media.addEventListener('error',()=>{const stage=$('#playerStage');stage.innerHTML='<div class="player-empty"><div class="player-icon">!</div><h3>تعذر تشغيل الفيديو</h3><p>الرابط المباشر لم يعد متاحاً أو لا يدعم التشغيل من المتصفح.</p><small>يمكن للمدير استبداله من لوحة الإدارة برابط MP4/WebM صالح.</small></div>';},{once:true});
