@@ -64,6 +64,18 @@ function playerMarkup(x){
   if(embed)return '<iframe class="site-frame" src="'+esc(embed)+'" title="'+esc(x.title)+'" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>';
   return '<div class="player-empty"><div class="player-icon">▶</div><h3>المشاهدة داخل VIP Drama</h3><p>لا يوجد حالياً رابط فيديو مباشر أو تضمين رسمي صالح لهذا العنوان.</p><small>من لوحة الإدارة أضف رابط MP4/WebM مباشر أو رابط Embed رسمي للمحتوى الذي تملك حق عرضه.</small></div>';
 }
+function blenderEmbedFromUrl(url){
+  const m=String(url||'').match(/video\.blender\.org\/(?:static\/webseed|download\/videos)\/([0-9a-f-]{36})-[0-9]+\.mp4/i);
+  return m?'https://video.blender.org/videos/embed/'+m[1]:'';
+}
+function fallbackToEmbed(v){
+  const url=v?.currentSrc||v?.src||'';
+  const embed=blenderEmbedFromUrl(url);
+  if(!embed)return false;
+  const stage=$('#playerStage');
+  stage.innerHTML='<iframe class="site-frame" src="'+esc(embed)+'" title="مشغل الفيديو الرسمي" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+  return true;
+}
 function setupVipPlayer(){
   const wrap=$('#playerStage .vip-player'),v=$('#vipVideo');if(!wrap||!v)return;
   let zoom=1;
@@ -80,6 +92,9 @@ function setupVipPlayer(){
   wrap.querySelector('[data-act="zoomin"]').onclick=()=>{zoom=Math.min(1.5,Math.round((zoom+.1)*10)/10);applyZoom();};
   wrap.querySelector('[data-act="fullscreen"]').onclick=()=>{const target=wrap;if(document.fullscreenElement)document.exitFullscreen?.();else target.requestFullscreen?.();};
   applyZoom();
+  const preferred=v.canPlayType('video/mp4');
+  if(!preferred && blenderEmbedFromUrl(v.currentSrc||v.src)) fallbackToEmbed(v);
+  v.addEventListener('error',()=>{fallbackToEmbed(v);},{once:true});
 }
 
 async function recordView(x){
