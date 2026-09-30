@@ -53,3 +53,21 @@ create policy "Admins can read admin list" on public.vip_admins for select to au
 using (user_id = (select auth.uid()));
 
 grant usage, select on sequence public.vip_content_id_seq to authenticated;
+
+
+-- Seed the open/licensed demo library. Re-running this file will not duplicate these titles.
+insert into public.vip_content (title,type,year,genre,rating,tag,description,poster,video_url,license,source)
+select 'Big Buck Bunny','movie',2008,'رسوم متحركة',8.1,'مرخّص CC','فيلم رسوم متحركة قصير من Blender Foundation، متاح لإعادة الاستخدام وفق CC BY مع متطلبات النسب.','linear-gradient(145deg,#14532d,#f59e0b)','https://video.blender.org/static/webseed/bf1f3fb5-b119-4f9f-9930-8e20e892b898-720.mp4','Creative Commons Attribution 3.0','Blender Foundation'
+where not exists (select 1 from public.vip_content where title='Big Buck Bunny');
+
+insert into public.vip_content (title,type,year,genre,rating,tag,description,poster,embed_url,license,source)
+select 'Sintel','movie',2010,'فانتازيا • رسوم متحركة',8.0,'مرخّص CC','فيلم قصير مفتوح من Blender Foundation، مرخّص للمشاركة والعرض مع الالتزام بالنسب والاعتمادات.','linear-gradient(145deg,#172554,#7c3aed)','https://durian.blender.org/','Creative Commons Attribution 3.0','Blender Foundation'
+where not exists (select 1 from public.vip_content where title='Sintel');
+
+insert into public.vip_content (title,type,year,genre,rating,tag,description,poster,embed_url,license,source)
+select 'Elephants Dream','movie',2006,'خيال • رسوم متحركة',7.8,'مرخّص CC','أحد مشاريع Blender Open Movie، منشور بموجب ترخيص Creative Commons Attribution.','linear-gradient(145deg,#3f1d0b,#ea580c)','https://orange.blender.org/','Creative Commons Attribution','Blender Foundation'
+where not exists (select 1 from public.vip_content where title='Elephants Dream');
+
+insert into public.vip_content (title,type,year,genre,rating,tag,description,poster,embed_url,license,source)
+select 'Tears of Steel','movie',2012,'خيال علمي',7.7,'مرخّص مفتوح','فيلم مفتوح من Blender Institute؛ راجع شروط كل مادة قبل إعادة الاستخدام.','linear-gradient(145deg,#082f49,#0891b2)','https://mango.blender.org/','Creative Commons (راجع صفحة المشروع)','Blender Foundation'
+where not exists (select 1 from public.vip_content where title='Tears of Steel');
