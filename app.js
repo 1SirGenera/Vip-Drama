@@ -1,5 +1,5 @@
 const $=s=>document.querySelector(s);
-function card(x){return `<article class="card"><div class="poster" style="background:${x.poster}"><span class="tag">${x.tag}</span><span class="rating">★ ${x.rating}</span><div class="poster-title">${x.title}</div></div><div class="card-info"><div><h3>${x.title}</h3><p>${x.genre} • ${x.year}</p></div><button class="play" onclick="openTitle(${x.id})">▶</button></div></article>`}
+function card(x){return '<article class="card"><div class="poster" style="background:'+x.poster+'"><span class="tag">'+x.tag+'</span><span class="rating">★ '+x.rating+'</span><div class="poster-title">'+x.title+'</div></div><div class="card-info"><div><h3>'+x.title+'</h3><p>'+x.genre+' • '+x.year+'</p><span class="view-count">👁 '+Number(x.view_count||0).toLocaleString('ar-SA')+' مشاهدة</span></div><button class="play" onclick="openTitle('+x.id+')">▶</button></div></article>'}
 function render(id,items){$(id).innerHTML=items.map(card).join('')}
 let all=window.VIP_CONTENT.slice();
 let vipClient=null;
@@ -14,6 +14,23 @@ async function loadContent(){
 }
 render('#latestGrid',all.slice(0,6)); render('#moviesGrid',all.filter(x=>x.type==='movie')); render('#seriesGrid',all.filter(x=>x.type==='series')); render('#animeGrid',all.filter(x=>x.type==='anime'));
 
+async function recordView(x){
+  if(!vipClient||!x||!x.id)return;
+  const key='vip-view-'+x.id;
+  const now=Date.now();
+  try{
+    const last=Number(localStorage.getItem(key)||0);
+    if(last && now-last<86400000)return;
+    const {data,error}=await vipClient.rpc('record_view',{p_content_id:x.id});
+    if(!error){
+      localStorage.setItem(key,String(now));
+      const updated=all.find(v=>v.id===x.id);
+      if(updated&&typeof data==='number')updated.view_count=data;
+      render('#latestGrid',all.slice(0,6)); render('#moviesGrid',all.filter(v=>v.type==='movie')); render('#seriesGrid',all.filter(v=>v.type==='series')); render('#animeGrid',all.filter(v=>v.type==='anime'));
+      $('#playerMeta').textContent=x.genre+' • '+x.year+'  |  '+(x.license||'الترخيص غير محدد')+'  |  👁 '+Number(data||0).toLocaleString('ar-SA')+' مشاهدة';
+    }
+  }catch(_){}
+}
 function playerMarkup(x){
   if(x.videoUrl)return `<video class="site-video" controls autoplay playsinline preload="metadata" poster="" src="${x.videoUrl}"></video>`;
   if(x.embedUrl)return `<iframe class="site-frame" src="${x.embedUrl}" title="${x.title}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
@@ -22,13 +39,14 @@ function playerMarkup(x){
 window.openTitle=id=>{
   const x=all.find(v=>v.id===id); if(!x)return;
   $('#playerTitle').textContent=x.title;
-  $('#playerMeta').textContent=`${x.genre} • ${x.year}  |  ${x.license||'الترخيص غير محدد'}`;
+  $('#playerMeta').textContent=x.genre+' • '+x.year+'  |  '+(x.license||'الترخيص غير محدد')+'  |  👁 '+Number(x.view_count||0).toLocaleString('ar-SA')+' مشاهدة';
   $('#playerDesc').textContent=x.description||'';
   $('#playerSource').textContent=x.source?\`المصدر: ${x.source}\`:'';
   $('#playerStage').innerHTML=playerMarkup(x);
   $('#playerModal').classList.add('show');
   document.body.classList.add('player-open');
   const media=$('#playerStage .site-video'); if(media)media.focus();
+  recordView(x);
 };
 window.closePlayer=()=>{
   const media=$('#playerStage .site-video'); if(media){media.pause();media.removeAttribute('src');media.load();}
