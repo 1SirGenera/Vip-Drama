@@ -1,7 +1,17 @@
 const $=s=>document.querySelector(s);
 function card(x){return `<article class="card"><div class="poster" style="background:${x.poster}"><span class="tag">${x.tag}</span><span class="rating">★ ${x.rating}</span><div class="poster-title">${x.title}</div></div><div class="card-info"><div><h3>${x.title}</h3><p>${x.genre} • ${x.year}</p></div><button class="play" onclick="openTitle(${x.id})">▶</button></div></article>`}
 function render(id,items){$(id).innerHTML=items.map(card).join('')}
-const all=JSON.parse(localStorage.getItem('vip_content')||'null')||window.VIP_CONTENT;
+let all=window.VIP_CONTENT.slice();
+let vipClient=null;
+async function loadContent(){
+  if(!window.supabase||!window.SUPABASE_URL||!window.SUPABASE_PUBLISHABLE_KEY)return;
+  vipClient=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
+  const {data,error}=await vipClient.from('vip_content').select('*').order('created_at',{ascending:false});
+  if(!error&&Array.isArray(data)&&data.length){
+    all=data.map(x=>({...x,watchUrl:x.watch_url,videoUrl:x.video_url,embedUrl:x.embed_url}));
+    render('#latestGrid',all.slice(0,6)); render('#moviesGrid',all.filter(x=>x.type==='movie')); render('#seriesGrid',all.filter(x=>x.type==='series')); render('#animeGrid',all.filter(x=>x.type==='anime'));
+  }
+}
 render('#latestGrid',all.slice(0,6)); render('#moviesGrid',all.filter(x=>x.type==='movie')); render('#seriesGrid',all.filter(x=>x.type==='series')); render('#animeGrid',all.filter(x=>x.type==='anime'));
 
 function playerMarkup(x){
@@ -35,3 +45,4 @@ $('#searchInput').oninput=e=>{const q=e.target.value.trim().toLowerCase();$('#se
 async function setupAccountButton(){const btn=$('#accountBtn');if(!btn||!window.supabase||!window.SUPABASE_URL||window.SUPABASE_URL.includes('YOUR-PROJECT'))return;const client=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});const {data:{session}}=await client.auth.getSession();updateAccountButton(btn,session);client.auth.onAuthStateChange((_event,newSession)=>updateAccountButton(btn,newSession))}
 function updateAccountButton(btn,session){if(session){btn.textContent='👤 حسابي';btn.href='login.html';btn.classList.add('logged-in')}else{btn.textContent='👤 تسجيل الدخول';btn.href='login.html';btn.classList.remove('logged-in')}}
 setupAccountButton();
+loadContent();
