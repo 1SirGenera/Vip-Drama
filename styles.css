@@ -46,3 +46,14 @@ body.player-open{overflow:hidden}.player-modal{padding:2.5%;display:none;align-i
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.poster,.poster-image{transition:none}}
 
 .legal-page{max-width:900px;margin:auto;min-height:70vh}.legal-page h1{font-size:42px;margin:10px 0 28px}.legal-page h2{font-size:22px;margin:30px 0 10px}.legal-page p{color:#c2c8d6;line-height:2}.legal-page a{color:#c4b5fd;text-decoration:underline}.legal-page .muted{font-size:12px}
+
+/* Admin production dashboard */
+.admin .stats{grid-template-columns:repeat(4,1fr)}
+.stat small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
+.admin-tools{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px}
+.admin-tools input,.admin-tools select{flex:1;min-width:170px;padding:11px;border-radius:10px;border:1px solid var(--line);background:#080a10;color:#fff;font:inherit}
+.status-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:20px;font-size:10px;background:#ffffff0a;border:1px solid var(--line)}
+.status-pill.live{color:#86efac;border-color:#22c55e44;background:#22c55e12}
+.status-pill.draft{color:#fbbf24;border-color:#f59e0b44;background:#f59e0b12}
+.rights-ok{color:#86efac}.rights-warn{color:#fbbf24}
+@media(max-width:850px){.admin .stats{grid-template-columns:1fr 1fr}}
