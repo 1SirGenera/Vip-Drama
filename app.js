@@ -25,7 +25,7 @@ function mergeContent(dbRows){
       videoUrl:isBlender?'':normalizeUrl(row.video_url)||normalizeUrl(row.videoUrl)||normalizeUrl(base.videoUrl),
       embedUrl:isBlender?localEmbed:normalizeUrl(row.embed_url)||normalizeUrl(row.embedUrl)||localEmbed,
       watchUrl:normalizeUrl(row.watch_url)||normalizeUrl(row.watchUrl)||normalizeUrl(base.watchUrl),
-      poster:normalizeUrl(row.poster)||base.poster||'linear-gradient(145deg,#171326,#111827)',
+      poster:(/^https?:\/\//i.test(normalizeUrl(base.poster))?normalizeUrl(base.poster):normalizeUrl(row.poster)||base.poster||'linear-gradient(145deg,#171326,#111827)'),
       description:row.description||base.description||'',
       license:row.license||base.license||'',
       source:row.source||base.source||''
