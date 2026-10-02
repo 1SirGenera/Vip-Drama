@@ -34,7 +34,7 @@ function mergeContent(dbRows){
   const dbTitles=new Set(merged.map(x=>String(x.title||'').trim().toLowerCase()));
   return [...merged,...all.filter(x=>!dbTitles.has(String(x.title||'').trim().toLowerCase()))];
 }
-function renderAll(){all=all.map(x=>({...x,type:normalizeType(x.type)||'movie'}));render('#latestGrid',all.slice(0,6));render('#moviesGrid',all.filter(x=>x.type==='movie'));render('#seriesGrid',all.filter(x=>x.type==='series'));render('#animeGrid',all.filter(x=>x.type==='anime'))}
+function renderAll(){all=all.map(x=>({...x,type:normalizeType(x.type)||'movie'}));const latest=[...all].sort((a,b)=>Number(b.year||0)-Number(a.year||0)).slice(0,8);render('#latestGrid',latest);render('#moviesGrid',all.filter(x=>x.type==='movie'));render('#seriesGrid',all.filter(x=>x.type==='series'));render('#animeGrid',all.filter(x=>x.type==='anime'))}
 async function loadContent(){
   renderAll();
   if(!window.supabase||!window.SUPABASE_URL||!window.SUPABASE_PUBLISHABLE_KEY)return;
