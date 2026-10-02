@@ -18,12 +18,14 @@ function mergeContent(dbRows){
   const localByTitle=new Map(all.map(x=>[String(x.title||'').trim().toLowerCase(),x]));
   const merged=(dbRows||[]).map(row=>{
     const base=localByTitle.get(String(row.title||'').trim().toLowerCase())||{};
+    const titleKey=String(row.title||'').trim().toLowerCase();
+    const preferLocalPlayback=titleKey==='sintel'&&normalizeUrl(base.embedUrl);
     return {...base,...row,
       id:row.id??base.id,
       type:normalizeType(row.type)||normalizeType(base.type)||'movie',
-      watchUrl:normalizeUrl(row.watch_url)||normalizeUrl(row.watchUrl)||normalizeUrl(base.watchUrl),
-      videoUrl:normalizeUrl(row.video_url)||normalizeUrl(row.videoUrl)||normalizeUrl(base.videoUrl),
-      embedUrl:normalizeUrl(row.embed_url)||normalizeUrl(row.embedUrl)||normalizeUrl(base.embedUrl),
+      watchUrl:preferLocalPlayback?normalizeUrl(base.watchUrl):normalizeUrl(row.watch_url)||normalizeUrl(row.watchUrl)||normalizeUrl(base.watchUrl),
+      videoUrl:preferLocalPlayback?'':normalizeUrl(row.video_url)||normalizeUrl(row.videoUrl)||normalizeUrl(base.videoUrl),
+      embedUrl:preferLocalPlayback?normalizeUrl(base.embedUrl):normalizeUrl(row.embed_url)||normalizeUrl(row.embedUrl)||normalizeUrl(base.embedUrl),
       poster:normalizeUrl(row.poster)||base.poster||'linear-gradient(145deg,#171326,#111827)',
       description:row.description||base.description||'',
       license:row.license||base.license||'',
