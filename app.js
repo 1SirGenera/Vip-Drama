@@ -14,8 +14,26 @@ let all=Array.isArray(window.VIP_CONTENT)?window.VIP_CONTENT.slice():[];
 let vipClient=null,selectedTitle=null;
 function mergeContent(dbRows){
   const localByTitle=new Map(all.map(x=>[String(x.title||'').trim().toLowerCase(),x]));
-  const merged=(dbRows||[]).map(row=>{const base=localByTitle.get(String(row.title||'').trim().toLowerCase())||{};const localEmbed=normalizeUrl(base.embedUrl);const isBlender=localEmbed.includes('video.blender.org/videos/embed/');return {...base,...row,id:row.id??base.id,type:normalizeType(row.type)||normalizeType(base.type)||'movie',videoUrl:isBlender?'':normalizeUrl(row.video_url)||normalizeUrl(row.videoUrl)||normalizeUrl(base.videoUrl),embedUrl:isBlender?localEmbed:normalizeUrl(row.embed_url)||normalizeUrl(row.embedUrl)||localEmbed,watchUrl:normalizeUrl(row.watch_url)||normalizeUrl(row.watchUrl)||normalizeUrl(base.watchUrl),poster:(/^https?:\/\//i.test(normalizeUrl(base.poster))?normalizeUrl(base.poster):normalizeUrl(row.poster)||base.poster||'linear-gradient(145deg,#171326,#111827)'),description:row.description||base.description||'',license:row.license||base.license||'',source:row.source||base.source||''}});
-  const dbTitles=new Set(merged.map(x=>String(x.title||'').trim().toLowerCase()));return [...merged,...all.filter(x=>!dbTitles.has(String(x.title||'').trim().toLowerCase()))];
+  const merged=(dbRows||[]).map(row=>{
+    const base=localByTitle.get(String(row.title||'').trim().toLowerCase())||{};
+    const localEmbed=normalizeUrl(base.embedUrl);
+    const isBlender=localEmbed.includes('video.blender.org/videos/embed/');
+    return {
+      ...base,
+      ...row,
+      id:row.id??base.id,
+      type:normalizeType(row.type)||normalizeType(base.type)||'movie',
+      videoUrl:isBlender?'':normalizeUrl(row.video_url)||normalizeUrl(row.videoUrl)||normalizeUrl(base.videoUrl),
+      embedUrl:isBlender?localEmbed:normalizeUrl(row.embed_url)||normalizeUrl(row.embedUrl)||localEmbed,
+      watchUrl:normalizeUrl(row.watch_url)||normalizeUrl(row.watchUrl)||normalizeUrl(base.watchUrl),
+      poster:/^https?:\\/\\//i.test(normalizeUrl(base.poster))?normalizeUrl(base.poster):normalizeUrl(row.poster)||base.poster||'linear-gradient(145deg,#171326,#111827)',
+      description:row.description||base.description||'',
+      license:row.license||base.license||'',
+      source:row.source||base.source||''
+    };
+  });
+  const dbTitles=new Set(merged.map(x=>String(x.title||'').trim().toLowerCase()));
+  return [...merged,...all.filter(x=>!dbTitles.has(String(x.title||'').trim().toLowerCase()))];
 }
 function getContinue(){return all.filter(x=>{try{return Number(localStorage.getItem(resumeKey(x.id)||0))>10}catch(_){return false}}).sort((a,b)=>Number(localStorage.getItem(resumeKey(b.id))||0)-Number(localStorage.getItem(resumeKey(a.id))||0))}
 function getFavorites(){return all.filter(x=>isFavorite(x.id))}
