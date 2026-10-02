@@ -1,6 +1,6 @@
 const $=s=>document.querySelector(s);
 let items=[],client=null;
-const fields=['title','type','year','genre','rating','tag','description','videoUrl','embedUrl','watchUrl','license','source','licenseUrl','poster'];
+const fields=['title','type','year','genre','rating','tag','description','videoUrl','embedUrl','watchUrl','license','source','licenseUrl','rightsHolder','territories','published','poster'];
 function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
 async function init(){
   if(!window.supabase||!window.SUPABASE_URL||!window.SUPABASE_PUBLISHABLE_KEY)return fail('إعداد Supabase غير متوفر.');
@@ -15,7 +15,7 @@ async function init(){
 async function load(){
   const {data,error}=await client.from('vip_content').select('*').order('created_at',{ascending:false});
   if(error)return fail('تعذر تحميل المحتوى: '+error.message);
-  items=(data||[]).map(x=>({...x,watchUrl:x.watch_url,videoUrl:x.video_url,embedUrl:x.embed_url,licenseUrl:x.license_url}));
+  items=(data||[]).map(x=>({...x,watchUrl:x.watch_url,videoUrl:x.video_url,embedUrl:x.embed_url,licenseUrl:x.license_url,rightsHolder:x.rights_holder,territories:x.territories,published:x.published !== false}));
   refresh();
 }
 function typeName(t){return t==='movie'?'فيلم':t==='series'?'مسلسل':'أنمي / رسوم';}
@@ -47,7 +47,7 @@ window.removeItem=async id=>{
 $('#cancelEdit').onclick=()=>setForm(null);
 $('#form').onsubmit=async e=>{
   e.preventDefault();
-  const payload={title:$('#title').value.trim(),type:$('#type').value,year:Number($('#year').value)||null,genre:$('#genre').value.trim(),rating:Number($('#rating').value)||0,tag:$('#tag').value.trim()||'جديد',description:$('#description').value.trim(),video_url:$('#videoUrl').value.trim()||null,embed_url:$('#embedUrl').value.trim()||null,watch_url:$('#watchUrl').value.trim()||null,license:$('#license').value.trim()||null,source:$('#source').value.trim()||null,license_url:$('#licenseUrl').value.trim()||null,poster:$('#poster').value.trim()||'linear-gradient(145deg,#312e81,#db2777)'};
+  const payload={title:$('#title').value.trim(),type:$('#type').value,year:Number($('#year').value)||null,genre:$('#genre').value.trim(),rating:Number($('#rating').value)||0,tag:$('#tag').value.trim()||'جديد',description:$('#description').value.trim(),video_url:$('#videoUrl').value.trim()||null,embed_url:$('#embedUrl').value.trim()||null,watch_url:$('#watchUrl').value.trim()||null,license:$('#license').value.trim()||null,source:$('#source').value.trim()||null,license_url:$('#licenseUrl').value.trim()||null,rights_holder:$('#rightsHolder').value.trim()||null,territories:$('#territories').value.trim()||'Worldwide',published:$('#published').checked,poster:$('#poster').value.trim()||'linear-gradient(145deg,#312e81,#db2777)'};
   const id=Number($('#itemId').value||0);
   const result=id?await client.from('vip_content').update(payload).eq('id',id):await client.from('vip_content').insert(payload);
   if(result.error)return alert('تعذر حفظ البيانات: '+result.error.message);
