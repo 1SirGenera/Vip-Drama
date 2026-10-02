@@ -44,3 +44,5 @@ body.player-open{overflow:hidden}.player-modal{padding:2.5%;display:none;align-i
   .filters .filter-chip{white-space:nowrap}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.poster,.poster-image{transition:none}}
+
+.legal-page{max-width:900px;margin:auto;min-height:70vh}.legal-page h1{font-size:42px;margin:10px 0 28px}.legal-page h2{font-size:22px;margin:30px 0 10px}.legal-page p{color:#c2c8d6;line-height:2}.legal-page a{color:#c4b5fd;text-decoration:underline}.legal-page .muted{font-size:12px}
