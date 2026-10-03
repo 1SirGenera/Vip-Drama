@@ -2,7 +2,7 @@
 .admin{max-width:1250px;margin:auto;padding:45px 5%}.adminbar{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:30px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:25px}.stat{background:var(--panel);border:1px solid var(--line);padding:20px;border-radius:18px}.stat b{font-size:30px;display:block}.admin-grid{display:grid;grid-template-columns:1fr 1.7fr;gap:20px}.box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px}.box h3{margin-top:0}.field{display:grid;gap:6px;margin:12px 0}.field input,.field select,.field textarea{padding:11px;border-radius:10px;border:1px solid var(--line);background:#080a10;color:#fff;font:inherit}.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:11px 8px;border-bottom:1px solid var(--line);text-align:right;font-size:12px;white-space:nowrap}.table .actions{display:flex;gap:6px}.btn.small{padding:7px 10px;font-size:11px}.danger{background:#7f1d1d!important}.notice{color:#fbbf24;background:#422006;border:1px solid #854d0e;padding:12px;border-radius:12px;font-size:12px;line-height:1.8}.form-actions{display:flex;gap:8px;flex-wrap:wrap}.hidden{display:none!important}@media(max-width:850px){.stats,.admin-grid{grid-template-columns:1fr}.adminbar{align-items:flex-start;flex-direction:column}}
 </style>
 <style>
-.series-manager{margin-top:20px}
+.series-manager{margin-top:20px}.rights-manager{margin-top:20px}.rights-manager .muted{color:#9ca3af;font-size:12px;line-height:1.7}
 .section-head{margin-bottom:18px}
 .section-head h2{margin:5px 0}
 .series-layout{display:grid;grid-template-columns:1fr 1.7fr;gap:20px}
@@ -72,4 +72,34 @@
       <div class="table-wrap" style="margin-top:18px"><table class="table"><thead><tr><th>الحلقة</th><th>العنوان</th><th>الحالة</th><th>الحقوق</th><th>المشاهدات</th><th>إجراء</th></tr></thead><tbody id="episodeRows"><tr><td colspan="6" class="muted">اختر موسمًا أولاً.</td></tr></tbody></table></div>
     </div>
   </div>
-</section></main><script src="data.js?v=20261003-1"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="admin.js?v=20261003-2"></script></body></html>
+<section class="box rights-manager" id="rightsManager">
+  <div class="section-head">
+    <div>
+      <span class="eyebrow">RIGHTS QUEUE</span>
+      <h2>طلبات والتحقق من حقوق المحتوى</h2>
+      <p class="muted">سجّل الأعمال غير الموثقة هنا أولاً. لا تجعل العنوان منشوراً إلا بعد توفر إثبات واضح للترخيص أو الإذن أو حالة الملكية العامة/الترخيص المفتوح.</p>
+    </div>
+  </div>
+  <form id="rightsForm">
+    <input id="rightsRequestId" type="hidden">
+    <div class="episode-grid">
+      <div class="field"><label>العنوان</label><input id="rightsTitle" required></div>
+      <div class="field"><label>النوع</label><select id="rightsType"><option value="series">مسلسل</option><option value="movie">فيلم</option><option value="anime">أنمي / رسوم</option><option value="theater">مسرحية</option><option value="other">أخرى</option></select></div>
+      <div class="field"><label>سنة الإنتاج</label><input id="rightsYear" type="number"></div>
+      <div class="field"><label>بلد الإنتاج / المنطقة</label><input id="rightsOriginCountry" placeholder="Yemen"></div>
+      <div class="field"><label>المجموعة</label><select id="rightsCollection"><option value="">بدون مجموعة</option><option value="Yemeni Series">مسلسلات يمنية</option><option value="Yemeni Theater">مسرحيات يمنية</option></select></div>
+      <div class="field"><label>حالة الحقوق</label><select id="rightsStatus"><option value="pending">قيد المراجعة</option><option value="needs_proof">يحتاج إثبات</option><option value="verified">تم التحقق</option><option value="rejected">مرفوض</option></select></div>
+      <div class="field"><label>صاحب الحقوق</label><input id="rightsHolder"></div>
+      <div class="field"><label>نطاق العرض</label><input id="rightsTerritories" value="Worldwide"></div>
+      <div class="field"><label>رابط المصدر</label><input id="rightsSourceUrl" type="url" placeholder="https://..."></div>
+      <div class="field"><label>رابط الترخيص / الإثبات</label><input id="rightsLicenseUrl" type="url" placeholder="https://..."></div>
+      <div class="field full"><label>ملاحظات</label><textarea id="rightsNotes" rows="3"></textarea></div>
+    </div>
+    <div class="form-actions"><button class="btn primary" id="rightsSave" type="submit">إضافة طلب</button><button class="btn ghost hidden" id="rightsCancel" type="button">إلغاء التعديل</button></div>
+  </form>
+  <div class="table-wrap" style="margin-top:20px">
+    <table class="table"><thead><tr><th>العنوان</th><th>النوع</th><th>المجموعة</th><th>الحالة</th><th>صاحب الحقوق</th><th>الإثبات</th><th>إجراء</th></tr></thead>
+    <tbody id="rightsRows"><tr><td colspan="7" class="muted">جارٍ التحميل...</td></tr></tbody></table>
+  </div>
+</section>
+</section></main><script src="data.js?v=20261003-1"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="admin.js?v=20261003-3"></script></body></html>
