@@ -81,9 +81,35 @@ function filteredItems(){
  return items.filter(x=>{const hay=[x.title,x.genre,x.tag,x.rightsHolder,x.source].join(' ').toLowerCase();return(!q||hay.includes(q))&&(status==='all'||(status==='published'?x.published:!x.published))&&(type==='all'||x.type===type)});
 }
 function refresh(){
- $('#count').textContent=items.length;$('#publishedCount').textContent=items.filter(x=>x.published).length;$('#draftCount').textContent=items.filter(x=>!x.published).length;$('#views').textContent=items.reduce((s,x)=>s+Number(x.view_count||0),0).toLocaleString('ar-SA');
- const rows=filteredItems();
- $('#rows').innerHTML=rows.map(x=>{const rights=x.license&&x.rightsHolder;return '<tr><td><strong>'+esc(x.title)+'</strong></td><td>'+typeName(x.type)+'</td><td>'+esc(x.year||'')+'</td><td>'+esc(x.collection==='Yemeni Series'?'🇾🇪 مسلسلات يمنية':x.collection==='Yemeni Theater'?'🇾🇪 مسرحيات يمنية':x.collection||'—')+'</td><td><span class="status-pill '+(x.published?'live':'draft')+'">'+(x.published?'● منشور':'● مسودة')+'</span></td><td><span class="'+(rights?'rights-ok':'rights-warn')+'">'+(rights?'✓ موثقة':'⚠ ناقصة')+'</span></td><td>👁 '+Number(x.view_count||0).toLocaleString('ar-SA')+'</td><td><div class="actions"><button class="btn small ghost" onclick="editItem('+Number(x.id)+')">تعديل</button><button class="btn small danger" onclick="removeItem('+Number(x.id)+')">حذف</button></div></td></tr>}).join('')||'<tr><td colspan="7" class="muted">لا توجد نتائج مطابقة.</td></tr>';
+  $('#count').textContent=items.length;
+  $('#publishedCount').textContent=items.filter(x=>x.published).length;
+  $('#draftCount').textContent=items.filter(x=>!x.published).length;
+  $('#views').textContent=items.reduce((s,x)=>s+Number(x.view_count||0),0).toLocaleString('ar-SA');
+  const rows=filteredItems();
+  const el=$('#rows');
+  if(!el)return;
+  el.innerHTML='';
+  if(!rows.length){
+    el.innerHTML='<tr><td colspan="8" class="muted">لا توجد نتائج مطابقة.</td></tr>';
+    return;
+  }
+  rows.forEach(x=>{
+    const tr=document.createElement('tr');
+    const rights=Boolean(x.license&&x.rightsHolder);
+    const collection=x.collection==='Yemeni Series'?'🇾🇪 مسلسلات يمنية':x.collection==='Yemeni Theater'?'🇾🇪 مسرحيات يمنية':x.collection||'—';
+    tr.innerHTML='<td><strong>'+esc(x.title)+'</strong></td>'+
+      '<td>'+esc(typeName(x.type))+'</td>'+
+      '<td>'+esc(x.year||'')+'</td>'+
+      '<td>'+esc(collection)+'</td>'+
+      '<td><span class="status-pill '+(x.published?'live':'draft')+'">'+(x.published?'● منشور':'● مسودة')+'</span></td>'+
+      '<td><span class="'+(rights?'rights-ok':'rights-warn')+'">'+(rights?'✓ موثقة':'⚠ ناقصة')+'</span></td>'+
+      '<td>👁 '+Number(x.view_count||0).toLocaleString('ar-SA')+'</td>'+
+      '<td><div class="actions">'+
+        '<button class="btn small ghost" onclick="editItem('+Number(x.id)+')">تعديل</button>'+
+        '<button class="btn small danger" onclick="removeItem('+Number(x.id)+')">حذف</button>'+
+      '</div></td>';
+    el.appendChild(tr);
+  });
 }
 function fail(msg){const rows=$('#rows');if(rows)rows.innerHTML='<tr><td colspan="7">'+esc(msg)+'</td></tr>';const n=document.querySelector('.notice');if(n)n.textContent=msg;}
 function setForm(x){$('#itemId').value=x?.id||'';fields.forEach(k=>{const el=$('#'+k);if(el)el.value=x?.[k]??''});$('#published').checked=x?.published!==false;$('#formTitle').textContent=x?'تعديل عنوان':'إضافة عنوان';$('#saveBtn').textContent=x?'حفظ التعديلات':'إضافة';$('#cancelEdit').classList.toggle('hidden',!x);$('#authorized').checked=false;window.scrollTo({top:0,behavior:'smooth'});}
