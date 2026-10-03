@@ -1,5 +1,5 @@
 const $=s=>document.querySelector(s);
-let items=[],client=null,rightsRequests=[];
+let items=[],client=null,rightsRequests=[],adminRole='';
 const fields=['title','type','year','genre','rating','tag','description','videoUrl','embedUrl','watchUrl','license','source','licenseUrl','rightsHolder','territories','originCountry','collection','poster'];
 function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
 async function init(){
@@ -7,12 +7,53 @@ async function init(){
  client=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
  const {data:{session}}=await client.auth.getSession();
  if(!session)return fail('يجب تسجيل الدخول أولاً للوصول إلى لوحة الإدارة.');
- const {data:admin,error}=await client.from('vip_admins').select('user_id').eq('user_id',session.user.id).maybeSingle();
+ const {data:admin,error}=await client.from('vip_admins').select('user_id,role').eq('user_id',session.user.id).maybeSingle();
  if(error)return fail('تعذر التحقق من صلاحيات المدير: '+error.message);
  if(!admin)return fail('هذا الحساب ليس مديراً.');
+ adminRole=admin.role||'admin';
+ applyRoleUi();
  await load();
- await loadRightsRequests();
+ if(can('rights')) await loadRightsRequests();
+ if(adminRole==='owner') await loadRoles();
 }
+function can(area){
+  const map={
+    content:['owner','admin','editor'],
+    series:['owner','admin','editor'],
+    rights:['owner','admin','moderator'],
+    roles:['owner']
+  };
+  return (map[area]||[]).includes(adminRole);
+}
+function roleName(role){return ({owner:'مالك المشروع',admin:'مدير',editor:'محرر محتوى',moderator:'مراجع حقوق',analyst:'محلل إحصائيات'})[role]||role||'—';}
+function applyRoleUi(){
+  document.body.dataset.adminRole=adminRole;
+  const badge=$('#adminRoleBadge');if(badge)badge.textContent='رتبتك: '+roleName(adminRole);
+  const editor=$('#contentEditor'),series=$('#seriesManager'),rights=$('#rightsManager'),roles=$('#rolesManager');
+  if(editor)editor.classList.toggle('hidden',!can('content'));
+  if(series)series.classList.toggle('hidden',!can('series'));
+  if(rights)rights.classList.toggle('hidden',!can('rights'));
+  if(roles)roles.classList.toggle('hidden',!can('roles'));
+}
+async function loadRoles(){
+  const box=$('#roleRows'); if(!box||adminRole!=='owner')return;
+  const {data,error}=await client.rpc('admin_list_roles');
+  if(error){box.innerHTML='<tr><td colspan="4">'+esc(error.message)+'</td></tr>';return;}
+  box.innerHTML=(data||[]).map(x=>'<tr><td>'+esc(x.email||'—')+'</td><td>'+esc(roleName(x.role))+'</td><td><code>'+esc(x.user_id)+'</code></td><td><button class="btn small danger" onclick="removeAdminRole(\''+esc(x.user_id)+'\')">إزالة</button></td></tr>').join('')||'<tr><td colspan="4" class="muted">لا يوجد مديرون.</td></tr>';
+}
+async function setAdminRole(){
+  const email=$('#roleEmail')?.value.trim(),role=$('#roleSelect')?.value;
+  if(!email)return alert('اكتب بريد الحساب أولاً.');
+  const {error}=await client.rpc('admin_set_role',{p_email:email,p_role:role});
+  if(error)return alert('تعذر حفظ الرتبة: '+error.message);
+  $('#roleEmail').value='';await loadRoles();alert('تم حفظ الرتبة.');
+}
+window.removeAdminRole=async id=>{
+  if(!confirm('هل تريد إزالة صلاحيات هذا الحساب؟'))return;
+  const {error}=await client.rpc('admin_remove_role',{p_user_id:id});
+  if(error)return alert('تعذر إزالة الرتبة: '+error.message);
+  await loadRoles();
+};
 async function load(){
  const {data,error}=await client.from('vip_content').select('*').order('created_at',{ascending:false});
  if(error)return fail('تعذر تحميل المحتوى: '+error.message);
@@ -20,6 +61,7 @@ async function load(){
  refresh();
 }
 async function loadRightsRequests(){
+  if(!can('rights'))return;
   const {data,error}=await client.from('vip_rights_requests').select('*').order('created_at',{ascending:false});
   if(error){const r=$('#rightsRows');if(r)r.innerHTML='<tr><td colspan="7">'+esc(error.message)+'</td></tr>';return;}
   rightsRequests=data||[];
