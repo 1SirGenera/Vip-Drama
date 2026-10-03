@@ -23,7 +23,8 @@ as $$
   );
 $$;
 
-revoke execute on function public.has_admin_role(text[]) from public, anon, authenticated;
+revoke execute on function public.has_admin_role(text[]) from public, anon;
+grant execute on function public.has_admin_role(text[]) to authenticated;
 
 -- The client only needs to read its own role. Owner-only role management is done through RPCs.
 revoke all on table public.vip_admins from anon, authenticated;
