@@ -72,7 +72,7 @@ async function setupPublicRequestForm(){
     e.preventDefault();
     const status=$('#requestStatus'),btn=form.querySelector('button[type="submit"]');
     const licenseUrl=$('#requestLicenseUrl')?.value.trim()||'';
-    if(!/^https?:\\/\\//i.test(licenseUrl)){status.textContent='أدخل رابط ترخيص أو إذن صالح يبدأ بـ https://';status.className='error';return}
+    if(!/^https?:\/\//i.test(licenseUrl)){status.textContent='أدخل رابط ترخيص أو إذن صالح يبدأ بـ https://';status.className='error';return}
     status.textContent='جاري إرسال الطلب...';status.className='loading';if(btn)btn.disabled=true;
     try{
       const {data:{session}}=await client.auth.getSession();
