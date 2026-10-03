@@ -34,4 +34,71 @@ window.editItem=id=>{const x=items.find(v=>Number(v.id)===Number(id));if(x)setFo
 window.removeItem=async id=>{if(!confirm('هل تريد حذف هذا العنوان نهائياً؟'))return;const {error}=await client.from('vip_content').delete().eq('id',id);if(error)return alert('تعذر الحذف: '+error.message);if(Number($('#itemId').value)===Number(id))setForm(null);await load()};
 $('#cancelEdit').onclick=()=>setForm(null);$('#tableSearch').oninput=refresh;$('#statusFilter').onchange=refresh;$('#typeFilter').onchange=refresh;
 $('#form').onsubmit=async e=>{e.preventDefault();const payload={title:$('#title').value.trim(),type:$('#type').value,year:Number($('#year').value)||null,genre:$('#genre').value.trim(),rating:Number($('#rating').value)||0,tag:$('#tag').value.trim()||'جديد',description:$('#description').value.trim(),video_url:$('#videoUrl').value.trim()||null,embed_url:$('#embedUrl').value.trim()||null,watch_url:$('#watchUrl').value.trim()||null,license:$('#license').value.trim()||null,source:$('#source').value.trim()||null,license_url:$('#licenseUrl').value.trim()||null,rights_holder:$('#rightsHolder').value.trim()||null,territories:$('#territories').value.trim()||'Worldwide',published:$('#published').checked,poster:$('#poster').value.trim()||'linear-gradient(145deg,#312e81,#db2777)'};if(!payload.license||!payload.rights_holder||!payload.license_url){if(!confirm('بيانات الحقوق غير مكتملة. هل تريد الحفظ كمسودة؟'))return;payload.published=false;$('#published').checked=false}const id=Number($('#itemId').value||0);const result=id?await client.from('vip_content').update(payload).eq('id',id):await client.from('vip_content').insert(payload);if(result.error)return alert('تعذر حفظ البيانات: '+result.error.message);setForm(null);await load()};
+
+let seasons=[],episodes=[],selectedSeasonId=null;
+
+function seriesItems(){
+  return items.filter(x=>x.type==='series');
+}
+function fillSeriesSelect(){
+  const el=$('#seriesSelect'); if(!el)return;
+  const current=el.value;
+  el.innerHTML='<option value="">اختر مسلسلًا...</option>'+seriesItems().map(x=>'<option value="'+Number(x.id)+'">'+esc(x.title)+(x.published?'':' — مسودة')+'</option>').join('');
+  if(current && seriesItems().some(x=>Number(x.id)===Number(current))) el.value=current;
+}
+async function loadSeasons(){
+  fillSeriesSelect();
+  const contentId=Number($('#seriesSelect')?.value||0);
+  selectedSeasonId=null;
+  resetEpisodeForm();
+  if(!contentId){
+    $('#seasonRows').innerHTML='<tr><td colspan="4" class="muted">اختر مسلسلًا أولاً.</td></tr>';
+    $('#episodeRows').innerHTML='<tr><td colspan="6" class="muted">اختر موسمًا أولاً.</td></tr>';
+    $('#episodeContext').textContent='اختر موسمًا لإدارة حلقاته.';
+    return;
+  }
+  const {data,error}=await client.from('vip_seasons').select('*').eq('content_id',contentId).order('season_number',{ascending:true});
+  if(error){$('#seasonRows').innerHTML='<tr><td colspan="4">'+esc(error.message)+'</td></tr>';return;}
+  seasons=data||[];
+  const counts={};
+  if(seasons.length){
+    const ids=seasons.map(s=>s.id);
+    const {data:epData}=await client.from('vip_episodes').select('id,season_id').in('season_id',ids);
+    (epData||[]).forEach(e=>counts[e.season_id]=(counts[e.season_id]||0)+1);
+  }
+  $('#seasonRows').innerHTML=seasons.map(s=>'<tr><td>الموسم '+Number(s.season_number)+'</td><td>'+esc(s.title||('الموسم '+s.season_number))+'</td><td>'+Number(counts[s.id]||0)+'</td><td><div class="actions"><button class="btn small ghost" onclick="selectSeason('+Number(s.id)+')">الحلقات</button><button class="btn small ghost" onclick="editSeason('+Number(s.id)+')">تعديل</button><button class="btn small danger" onclick="removeSeason('+Number(s.id)+')">حذف</button></div></td></tr>').join('')||'<tr><td colspan="4" class="muted">لا توجد مواسم لهذا المسلسل.</td></tr>';
+}
+function resetSeasonForm(){ $('#seasonId').value='';$('#seasonNumber').value='';$('#seasonTitle').value='';$('#seasonDescription').value='';$('#seasonPoster').value='';$('#seasonSave').textContent='إضافة موسم';$('#seasonCancel').classList.add('hidden');}
+function resetEpisodeForm(){selectedSeasonId=null;$('#episodeForm').classList.add('hidden');$('#episodeId').value='';$('#episodeNumber').value='';$('#episodeTitle').value='';$('#episodeDescription').value='';$('#episodeVideoUrl').value='';$('#episodeEmbedUrl').value='';$('#episodeWatchUrl').value='';$('#episodeLicense').value='';$('#episodeSource').value='';$('#episodeLicenseUrl').value='';$('#episodeRightsHolder').value='';$('#episodeTerritories').value='Worldwide';$('#episodeDuration').value='';$('#episodePoster').value='';$('#episodePublished').checked=true;$('#episodeAuthorized').checked=false;$('#episodeSave').textContent='إضافة حلقة';$('#episodeCancel').classList.add('hidden');}
+async function selectSeason(id){
+  selectedSeasonId=Number(id);
+  const s=seasons.find(x=>Number(x.id)===selectedSeasonId);
+  if(!s)return;
+  $('#episodeForm').classList.remove('hidden');
+  $('#episodeContext').textContent='إدارة حلقات '+(s.title||('الموسم '+s.season_number));
+  resetEpisodeForm();
+  selectedSeasonId=Number(id);
+  $('#episodeForm').classList.remove('hidden');
+  $('#episodeContext').textContent='إدارة حلقات '+(s.title||('الموسم '+s.season_number));
+  await loadEpisodes();
+}
+async function loadEpisodes(){
+  if(!selectedSeasonId)return;
+  const {data,error}=await client.from('vip_episodes').select('*').eq('season_id',selectedSeasonId).order('episode_number',{ascending:true});
+  if(error){$('#episodeRows').innerHTML='<tr><td colspan="6">'+esc(error.message)+'</td></tr>';return;}
+  episodes=data||[];
+  $('#episodeRows').innerHTML=episodes.map(x=>{const rights=x.license&&x.rights_holder&&x.license_url;return '<tr><td>'+Number(x.episode_number)+'</td><td><strong>'+esc(x.title)+'</strong></td><td><span class="status-pill '+(x.published?'live':'draft')+'">'+(x.published?'● منشورة':'● مسودة')+'</span></td><td><span class="'+(rights?'rights-ok':'rights-warn')+'">'+(rights?'✓ موثقة':'⚠ ناقصة')+'</span></td><td>👁 '+Number(x.view_count||0).toLocaleString('ar-SA')+'</td><td><div class="actions"><button class="btn small ghost" onclick="editEpisode('+Number(x.id)+')">تعديل</button><button class="btn small danger" onclick="removeEpisode('+Number(x.id)+')">حذف</button></div></td></tr>'}).join('')||'<tr><td colspan="6" class="muted">لا توجد حلقات لهذا الموسم.</td></tr>';
+}
+function editSeason(id){const s=seasons.find(x=>Number(x.id)===Number(id));if(!s)return;$('#seasonId').value=s.id;$('#seasonNumber').value=s.season_number;$('#seasonTitle').value=s.title||'';$('#seasonDescription').value=s.description||'';$('#seasonPoster').value=s.poster||'';$('#seasonSave').textContent='حفظ الموسم';$('#seasonCancel').classList.remove('hidden');}
+async function removeSeason(id){if(!confirm('حذف الموسم سيحذف جميع حلقاته. هل تريد المتابعة؟'))return;const {error}=await client.from('vip_seasons').delete().eq('id',id);if(error)return alert('تعذر حذف الموسم: '+error.message);resetSeasonForm();await loadSeasons();}
+function editEpisode(id){const x=episodes.find(v=>Number(v.id)===Number(id));if(!x)return;$('#episodeId').value=x.id;$('#episodeNumber').value=x.episode_number;$('#episodeTitle').value=x.title||'';$('#episodeDescription').value=x.description||'';$('#episodeVideoUrl').value=x.video_url||'';$('#episodeEmbedUrl').value=x.embed_url||'';$('#episodeWatchUrl').value=x.watch_url||'';$('#episodeLicense').value=x.license||'';$('#episodeSource').value=x.source||'';$('#episodeLicenseUrl').value=x.license_url||'';$('#episodeRightsHolder').value=x.rights_holder||'';$('#episodeTerritories').value=x.territories||'Worldwide';$('#episodeDuration').value=x.duration_seconds??'';$('#episodePoster').value=x.poster||'';$('#episodePublished').checked=x.published!==false;$('#episodeAuthorized').checked=false;$('#episodeSave').textContent='حفظ الحلقة';$('#episodeCancel').classList.remove('hidden');}
+$('#seriesSelect').onchange=()=>{resetSeasonForm();loadSeasons()};
+$('#seasonCancel').onclick=resetSeasonForm;
+$('#episodeCancel').onclick=()=>{resetEpisodeForm();if(selectedSeasonId){const id=selectedSeasonId;selectedSeasonId=id;$('#episodeForm').classList.remove('hidden');loadEpisodes();}};
+$('#seasonForm').onsubmit=async e=>{e.preventDefault();const contentId=Number($('#seriesSelect').value);if(!contentId)return alert('اختر مسلسلًا أولاً.');const payload={content_id:contentId,season_number:Number($('#seasonNumber').value),title:$('#seasonTitle').value.trim()||('الموسم '+Number($('#seasonNumber').value)),description:$('#seasonDescription').value.trim()||null,poster:$('#seasonPoster').value.trim()||null,updated_at:new Date().toISOString()};const id=Number($('#seasonId').value||0);const result=id?await client.from('vip_seasons').update(payload).eq('id',id):await client.from('vip_seasons').insert(payload);if(result.error)return alert('تعذر حفظ الموسم: '+result.error.message);resetSeasonForm();await loadSeasons()};
+$('#episodeForm').onsubmit=async e=>{e.preventDefault();if(!selectedSeasonId)return alert('اختر موسمًا أولاً.');const payload={season_id:selectedSeasonId,episode_number:Number($('#episodeNumber').value),title:$('#episodeTitle').value.trim(),description:$('#episodeDescription').value.trim()||null,video_url:$('#episodeVideoUrl').value.trim()||null,embed_url:$('#episodeEmbedUrl').value.trim()||null,watch_url:$('#episodeWatchUrl').value.trim()||null,license:$('#episodeLicense').value.trim()||null,source:$('#episodeSource').value.trim()||null,license_url:$('#episodeLicenseUrl').value.trim()||null,rights_holder:$('#episodeRightsHolder').value.trim()||null,territories:$('#episodeTerritories').value.trim()||'Worldwide',duration_seconds:Number($('#episodeDuration').value)||null,poster:$('#episodePoster').value.trim()||null,published:$('#episodePublished').checked,updated_at:new Date().toISOString()};if(!payload.license||!payload.rights_holder||!payload.license_url){if(!confirm('بيانات حقوق الحلقة غير مكتملة. هل تريد حفظها كمسودة؟'))return;payload.published=false;$('#episodePublished').checked=false}const id=Number($('#episodeId').value||0);const result=id?await client.from('vip_episodes').update(payload).eq('id',id):await client.from('vip_episodes').insert(payload);if(result.error)return alert('تعذر حفظ الحلقة: '+result.error.message);const season=selectedSeasonId;resetEpisodeForm();selectedSeasonId=season;$('#episodeForm').classList.remove('hidden');await loadEpisodes();await loadSeasons()};
+window.selectSeason=selectSeason;window.editSeason=editSeason;window.removeSeason=removeSeason;window.editEpisode=editEpisode;window.removeEpisode=async id=>{if(!confirm('هل تريد حذف الحلقة نهائياً؟'))return;const {error}=await client.from('vip_episodes').delete().eq('id',id);if(error)return alert('تعذر حذف الحلقة: '+error.message);await loadEpisodes();await loadSeasons()};
+const originalLoad=load;
+load=async function(){await originalLoad();await loadSeasons()};
+
 init();
