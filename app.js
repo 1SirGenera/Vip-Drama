@@ -64,6 +64,42 @@ document.querySelectorAll('[data-filter]').forEach(btn => btn.addEventListener('
     : all.filter(x => x.type === f);
   render('#latestGrid', items);
 }));
+async function setupPublicRequestForm(){
+  const form=$('#publicRequestForm'); if(!form||!window.supabase||!window.SUPABASE_URL||!window.SUPABASE_PUBLISHABLE_KEY)return;
+  let client=vipClient;
+  if(!client){try{client=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true}})}catch(_){return}}
+  form.addEventListener('submit',async e=>{
+    e.preventDefault();
+    const status=$('#requestStatus'),btn=form.querySelector('button[type="submit"]');
+    const licenseUrl=$('#requestLicenseUrl')?.value.trim()||'';
+    if(!/^https?:\\/\\//i.test(licenseUrl)){status.textContent='أدخل رابط ترخيص أو إذن صالح يبدأ بـ https://';status.className='error';return}
+    status.textContent='جاري إرسال الطلب...';status.className='loading';if(btn)btn.disabled=true;
+    try{
+      const {data:{session}}=await client.auth.getSession();
+      const payload={
+        title:$('#requestTitle').value.trim(),
+        content_type:$('#requestType').value,
+        production_year:Number($('#requestYear').value)||null,
+        origin_country:$('#requestCountry').value.trim()||null,
+        rights_status:'pending',
+        source_url:$('#requestSourceUrl').value.trim()||null,
+        license_url:licenseUrl,
+        territories:'Worldwide',
+        notes:$('#requestNotes').value.trim()||null,
+        requester_name:$('#requestName').value.trim()||null,
+        requester_email:$('#requestEmail').value.trim()||null,
+        requested_by:session?.user?.id||null
+      };
+      if(!payload.title){throw new Error('اكتب اسم العمل.')}
+      const {error}=await client.from('vip_rights_requests').insert(payload);
+      if(error)throw error;
+      form.reset();
+      $('#requestType').value='series';
+      status.textContent='تم إرسال الطلب بنجاح. سيظهر لك في الموقع فقط بعد مراجعة الإدارة والتحقق من الحقوق.';status.className='ok';
+    }catch(err){status.textContent='تعذر إرسال الطلب: '+(err?.message||'خطأ غير معروف');status.className='error'}
+    finally{if(btn)btn.disabled=false}
+  });
+}
 async function setupAccountButton(){const btn=$('#accountBtn');if(!btn||!window.supabase||!window.SUPABASE_URL||!window.SUPABASE_PUBLISHABLE_KEY)return;try{if(!vipClient)vipClient=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});const {data:{session}}=await vipClient.auth.getSession();userSession=session;updateAccountButton(btn,session);if(session)await loadUserLibrary();vipClient.auth.onAuthStateChange(async(_event,newSession)=>{userSession=newSession;updateAccountButton(btn,newSession);if(newSession)await loadUserLibrary()})}catch(_){}}
 function updateAccountButton(btn,session){btn.textContent=session?'👤 حسابي':'👤 تسجيل الدخول';btn.href='login.html';btn.classList.toggle('logged-in',!!session)}
 
@@ -134,4 +170,4 @@ window.showDetails=async id=>{
   if(x?.type==='series'&&vipClient)await loadSeriesSeasons(x.id);
 };
 
-renderAll();setupAccountButton();loadContent();
+renderAll();setupAccountButton();setupPublicRequestForm();loadContent();
