@@ -33,7 +33,19 @@ grant insert, update, delete on public.vip_content to authenticated;
 grant select on public.vip_admins to authenticated;
 
 drop policy if exists "Public can read VIP content" on public.vip_content;
-create policy "Public can read VIP content" on public.vip_content for select to anon, authenticated using (true);
+create policy "Public can read VIP content" on public.vip_content
+for select to anon, authenticated
+using (published = true);
+
+drop policy if exists "Admins can read all VIP content" on public.vip_content;
+create policy "Admins can read all VIP content" on public.vip_content
+for select to authenticated
+using (
+  exists (
+    select 1 from public.vip_admins a
+    where a.user_id = (select auth.uid())
+  )
+);
 
 drop policy if exists "Admins can insert VIP content" on public.vip_content;
 create policy "Admins can insert VIP content" on public.vip_content for insert to authenticated
@@ -110,6 +122,7 @@ begin
   set view_count = view_count + 1,
       updated_at = now()
   where id = p_content_id
+    and published = true
   returning view_count into new_count;
   return coalesce(new_count, 0);
 end;
