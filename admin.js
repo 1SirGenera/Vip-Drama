@@ -1,5 +1,5 @@
 const $=s=>document.querySelector(s);
-let items=[],client=null;
+let items=[],client=null,rightsRequests=[];
 const fields=['title','type','year','genre','rating','tag','description','videoUrl','embedUrl','watchUrl','license','source','licenseUrl','rightsHolder','territories','originCountry','collection','poster'];
 function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
 async function init(){
@@ -11,6 +11,7 @@ async function init(){
  if(error)return fail('تعذر التحقق من صلاحيات المدير: '+error.message);
  if(!admin)return fail('هذا الحساب ليس مديراً.');
  await load();
+ await loadRightsRequests();
 }
 async function load(){
  const {data,error}=await client.from('vip_content').select('*').order('created_at',{ascending:false});
@@ -18,6 +19,42 @@ async function load(){
  items=(data||[]).map(x=>({...x,watchUrl:x.watch_url,videoUrl:x.video_url,embedUrl:x.embed_url,licenseUrl:x.license_url,rightsHolder:x.rights_holder,territories:x.territories,originCountry:x.origin_country,collection:x.collection,published:x.published!==false}));
  refresh();
 }
+async function loadRightsRequests(){
+  const {data,error}=await client.from('vip_rights_requests').select('*').order('created_at',{ascending:false});
+  if(error){const r=$('#rightsRows');if(r)r.innerHTML='<tr><td colspan="7">'+esc(error.message)+'</td></tr>';return;}
+  rightsRequests=data||[];
+  renderRightsRequests();
+}
+function rightsTypeName(t){return ({movie:'فيلم',series:'مسلسل',anime:'أنمي / رسوم',theater:'مسرحية',other:'أخرى'})[t]||t||'—';}
+function rightsStatusName(s){return ({pending:'قيد المراجعة',needs_proof:'يحتاج إثبات',verified:'تم التحقق',rejected:'مرفوض'})[s]||s||'—';}
+function renderRightsRequests(){
+  const r=$('#rightsRows'); if(!r)return;
+  r.innerHTML=rightsRequests.map(x=>{
+    const proof=x.license_url||x.source_url;
+    const cls=x.rights_status==='verified'?'live':x.rights_status==='rejected'?'draft':'draft';
+    return '<tr><td><strong>'+esc(x.title)+'</strong></td><td>'+rightsTypeName(x.content_type)+'</td><td>'+esc(x.collection==='Yemeni Series'?'🇾🇪 مسلسلات يمنية':x.collection==='Yemeni Theater'?'🇾🇪 مسرحيات يمنية':x.collection||'—')+'</td><td><span class="status-pill '+cls+'">'+esc(rightsStatusName(x.rights_status))+'</span></td><td>'+esc(x.rights_holder||'—')+'</td><td>'+(proof?'<a href="'+esc(proof)+'" target="_blank" rel="noopener">فتح</a>':'—')+'</td><td><div class="actions"><button class="btn small ghost" onclick="editRightsRequest('+Number(x.id)+')">تعديل</button><button class="btn small danger" onclick="removeRightsRequest('+Number(x.id)+')">حذف</button></div></td></tr>';
+  }).join('')||'<tr><td colspan="7" class="muted">لا توجد طلبات حقوق حالياً.</td></tr>';
+}
+function resetRightsForm(){
+  $('#rightsRequestId').value='';$('#rightsTitle').value='';$('#rightsType').value='series';$('#rightsYear').value='';$('#rightsOriginCountry').value='';$('#rightsCollection').value='';$('#rightsStatus').value='pending';$('#rightsHolder').value='';$('#rightsTerritories').value='Worldwide';$('#rightsSourceUrl').value='';$('#rightsLicenseUrl').value='';$('#rightsNotes').value='';$('#rightsSave').textContent='إضافة طلب';$('#rightsCancel').classList.add('hidden');
+}
+function setRightsForm(x){
+  $('#rightsRequestId').value=x?.id||'';$('#rightsTitle').value=x?.title||'';$('#rightsType').value=x?.content_type||'series';$('#rightsYear').value=x?.production_year??'';$('#rightsOriginCountry').value=x?.origin_country||'';$('#rightsCollection').value=x?.collection||'';$('#rightsStatus').value=x?.rights_status||'pending';$('#rightsHolder').value=x?.rights_holder||'';$('#rightsTerritories').value=x?.territories||'Worldwide';$('#rightsSourceUrl').value=x?.source_url||'';$('#rightsLicenseUrl').value=x?.license_url||'';$('#rightsNotes').value=x?.notes||'';$('#rightsSave').textContent='حفظ التعديلات';$('#rightsCancel').classList.remove('hidden');document.querySelector('#rightsManager')?.scrollIntoView({behavior:'smooth'});
+}
+window.editRightsRequest=id=>{const x=rightsRequests.find(v=>Number(v.id)===Number(id));if(x)setRightsForm(x)};
+window.removeRightsRequest=async id=>{if(!confirm('هل تريد حذف طلب الحقوق نهائياً؟'))return;const {error}=await client.from('vip_rights_requests').delete().eq('id',id);if(error)return alert('تعذر حذف الطلب: '+error.message);resetRightsForm();await loadRightsRequests()};
+$('#rightsCancel').onclick=resetRightsForm;
+$('#rightsForm').onsubmit=async e=>{
+  e.preventDefault();
+  const id=Number($('#rightsRequestId').value||0);
+  const status=$('#rightsStatus').value;
+  const payload={title:$('#rightsTitle').value.trim(),content_type:$('#rightsType').value,production_year:Number($('#rightsYear').value)||null,origin_country:$('#rightsOriginCountry').value.trim()||null,collection:$('#rightsCollection').value||null,rights_status:status,rights_holder:$('#rightsHolder').value.trim()||null,source_url:$('#rightsSourceUrl').value.trim()||null,license_url:$('#rightsLicenseUrl').value.trim()||null,territories:$('#rightsTerritories').value.trim()||'Worldwide',notes:$('#rightsNotes').value.trim()||null,updated_at:new Date().toISOString()};
+  if(status==='verified'&&!payload.license_url&&!payload.source_url)return alert('لا يمكن وضع الحالة "تم التحقق" بدون رابط مصدر أو إثبات حقوق.');
+  const result=id?await client.from('vip_rights_requests').update(payload).eq('id',id):await client.from('vip_rights_requests').insert({...payload,requested_by:(await client.auth.getUser()).data.user?.id||null});
+  if(result.error)return alert('تعذر حفظ طلب الحقوق: '+result.error.message);
+  resetRightsForm();await loadRightsRequests();
+};
+
 function typeName(t){return t==='movie'?'فيلم':t==='series'?'مسلسل':'أنمي / رسوم';}
 function filteredItems(){
  const q=($('#tableSearch')?.value||'').trim().toLowerCase(),status=$('#statusFilter')?.value||'all',type=$('#typeFilter')?.value||'all';
