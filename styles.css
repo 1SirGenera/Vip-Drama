@@ -67,3 +67,24 @@ body.player-open{overflow:hidden}.player-modal{padding:2.5%;display:none;align-i
 .status-pill.live{color:#86efac;border-color:#22c55e44;background:#22c55e12}.status-pill.draft{color:#fbbf24;border-color:#f59e0b44;background:#f59e0b12}
 .rights-ok{color:#86efac}.rights-warn{color:#fbbf24}
 @media(max-width:850px){.admin .stats{grid-template-columns:1fr 1fr}}
+
+/* VIP Drama theme system */
+:root{color-scheme:dark}
+:root[data-theme="light"]{color-scheme:light;--bg:#f4f6fb;--panel:#ffffff;--panel2:#eef1f7;--text:#111827;--muted:#667085;--accent:#7c3aed;--accent2:#db2777;--line:#d8deea}
+:root[data-theme="light"] body{background:radial-gradient(circle at 80% 0,#eee6ff 0,transparent 30%),var(--bg);color:var(--text)}
+:root[data-theme="light"] .topbar{background:#ffffffdd;border-bottom-color:#dfe3ec}
+:root[data-theme="light"] .topbar nav a{color:#667085}:root[data-theme="light"] .topbar nav a:hover,:root[data-theme="light"] .topbar nav .active{color:#111827}
+:root[data-theme="light"] .account-btn,:root[data-theme="light"] .ghost,:root[data-theme="light"] .filter-chip,:root[data-theme="light"] .mini-fav{background:#ffffff;border-color:#d8deea;color:#273044}
+:root[data-theme="light"] .search-btn{color:#111827}:root[data-theme="light"] .hero-card{box-shadow:25px 30px 70px #64748b33}
+:root[data-theme="light"] .poster{box-shadow:inset 0 -100px 100px #0005}:root[data-theme="light"] .contact{background:linear-gradient(100deg,#ffffff,#f1effa)}
+:root[data-theme="light"] .modal{background:#11182766}:root[data-theme="light"] .modal-box,:root[data-theme="light"] .details-box,:root[data-theme="light"] .player-box{background:#ffffff;color:#111827;box-shadow:0 30px 100px #47556933}
+:root[data-theme="light"] .modal input,:root[data-theme="light"] .auth-form input,:root[data-theme="light"] .field input,:root[data-theme="light"] .field select,:root[data-theme="light"] .field textarea{background:#f8fafc;color:#111827;border-color:#d8deea}
+:root[data-theme="light"] .auth-card{background:linear-gradient(145deg,#fff,#f5f6fb);box-shadow:0 25px 70px #47556922}
+:root[data-theme="light"] .details-backdrop{background-color:#e5e7eb}:root[data-theme="light"] .season-tab{color:#273044;background:#fff}
+:root[data-theme="light"] .episode-row{background:#fff}:root[data-theme="light"] .episode-play{background:#111827;color:#fff}
+:root[data-theme="light"] .player-stage{background:#000}:root[data-theme="light"] footer{background:#f4f6fb}
+:root[data-theme="light"] .notice{background:#fffbeb;color:#92400e;border-color:#f59e0b}
+:root[data-theme="light"] .admin .stat,:root[data-theme="light"] .admin .box{background:#fff}
+.theme-toggle{border:1px solid var(--line);background:#ffffff08;color:inherit;border-radius:11px;padding:9px 12px;cursor:pointer;font:inherit;font-size:11px;font-weight:700;white-space:nowrap}
+.theme-toggle:hover{border-color:#8b5cf655;background:#8b5cf61a}
+@media(max-width:480px){.theme-toggle{padding:8px 9px;font-size:10px}}
