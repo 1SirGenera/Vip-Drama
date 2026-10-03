@@ -17,7 +17,7 @@
 .episode-info strong{display:block}.episode-info small{display:block;color:var(--muted);margin-top:3px}
 .episode-play{border:1px solid var(--line);background:#fff;color:#111;border-radius:10px;padding:8px 11px;cursor:pointer;font:inherit}
 @media(max-width:600px){.episode-row{grid-template-columns:auto 1fr}.episode-play{grid-column:2;justify-self:start}.season-tabs{overflow-x:auto;flex-wrap:nowrap}.season-tab{white-space:nowrap}}
-</style></head>
+.yemen-section{border-top:1px solid var(--line);padding-top:28px}.yemen-section .section-head p{margin:6px 0 0}.yemen-section .eyebrow{letter-spacing:.08em}</style></head>
 <body>
 <header class="topbar"><a class="brand" href="index.html"><span>VIP</span> Drama</a><nav><a class="active" href="#home">الرئيسية</a><a href="#movies">الأفلام</a><a href="#series">المسلسلات</a><a href="#anime">الأنمي والرسوم</a><a href="#contact">تواصل</a><a href="rights.html">الحقوق</a></nav><div class="top-actions"><a class="account-btn" id="accountBtn" href="login.html">👤 تسجيل الدخول</a><button class="search-btn" id="searchOpen" aria-label="بحث">⌕</button></div></header>
 <main id="home">
@@ -26,6 +26,8 @@
 <section class="section" id="movies"><div class="section-head"><div><span class="eyebrow">MOVIES</span><h2>أفلام</h2></div></div><div class="grid" id="moviesGrid"></div></section>
 <section class="section" id="series"><div class="section-head"><div><span class="eyebrow">SERIES</span><h2>مسلسلات</h2></div></div><div class="grid" id="seriesGrid"></div></section>
 <section class="section" id="anime"><div class="section-head"><div><span class="eyebrow">ANIME & CLASSICS</span><h2>أنمي ورسوم كلاسيكية</h2></div></div><div class="grid" id="animeGrid"></div></section>
+<section class="section yemen-section" id="yemen-series"><div class="section-head"><div><span class="eyebrow">🇾🇪 YEMEN</span><h2>المسلسلات اليمنية</h2><p class="muted">أعمال يمنية منشورة بعد التحقق من بيانات الحقوق والترخيص.</p></div></div><div class="grid" id="yemenSeriesGrid"></div></section>
+<section class="section yemen-section" id="yemen-plays"><div class="section-head"><div><span class="eyebrow">🇾🇪 YEMEN • THEATER</span><h2>المسرحيات اليمنية</h2><p class="muted">محتوى مسرحي يمني منشور وفق بيانات الحقوق المتاحة.</p></div></div><div class="grid" id="yemenPlaysGrid"></div></section>
 <section class="contact section" id="contact"><div><span class="eyebrow">CONTACT</span><h2>لديك اقتراح أو استفسار؟</h2><p>راسل فريق VIP Drama مباشرة عبر البريد الإلكتروني.</p></div><a class="btn primary" href="mailto:abwfdytan@gmail.com?subject=رسالة%20من%20VIP%20Drama">إرسال رسالة</a></section>
 </main>
 <footer><span>© 2026 VIP Drama</span><span>VIP Drama يعرض المحتوى المصرح به أو المفتوح وفق شروط ترخيصه.</span><span><a href="privacy.html">الخصوصية</a> · <a href="terms.html">الشروط</a> · <a href="rights.html">حقوق المحتوى</a> · <a href="admin.html">لوحة الإدارة</a></span></footer>
@@ -35,5 +37,5 @@
   <div id="episodeList" class="episode-list"></div>
 </div><small id="detailsSource" class="player-source"></small></div></div></div><div class="modal player-modal" id="playerModal" aria-hidden="true"><div class="player-box"><button class="close player-close" id="playerClose" aria-label="إغلاق">×</button><div id="playerStage" class="player-stage"></div><div class="player-info"><span class="eyebrow">VIP PLAYER</span><h2 id="playerTitle"></h2><p id="playerMeta" class="player-meta"></p><p id="playerDesc" class="muted"></p><small id="playerSource" class="player-source"></small></div></div></div>
 <div class="modal" id="searchModal"><div class="modal-box"><button class="close" id="searchClose">×</button><h3>بحث في المكتبة</h3><input id="searchInput" placeholder="اكتب اسم فيلم أو مسلسل..." autofocus><div id="searchResults"></div></div></div>
-<script src="data.js?v=20261002-9"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="app.js?v=20261003-2"></script>
+<script src="data.js?v=20261002-9"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="app.js?v=20261003-3"></script>
 </body></html>
