@@ -66,4 +66,72 @@ document.querySelectorAll('[data-filter]').forEach(btn => btn.addEventListener('
 }));
 async function setupAccountButton(){const btn=$('#accountBtn');if(!btn||!window.supabase||!window.SUPABASE_URL||!window.SUPABASE_PUBLISHABLE_KEY)return;try{if(!vipClient)vipClient=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});const {data:{session}}=await vipClient.auth.getSession();userSession=session;updateAccountButton(btn,session);if(session)await loadUserLibrary();vipClient.auth.onAuthStateChange(async(_event,newSession)=>{userSession=newSession;updateAccountButton(btn,newSession);if(newSession)await loadUserLibrary()})}catch(_){}}
 function updateAccountButton(btn,session){btn.textContent=session?'👤 حسابي':'👤 تسجيل الدخول';btn.href='login.html';btn.classList.toggle('logged-in',!!session)}
+
+let currentSeriesSeasons=[],currentEpisode=null;
+const episodeResumeKey=id=>'vip-episode-resume-'+id;
+async function loadSeriesSeasons(contentId){
+  const browser=$('#seriesBrowser'); if(!browser)return;
+  if(!contentId){browser.hidden=true;return}
+  try{
+    const {data,error}=await vipClient.from('vip_seasons').select('*').eq('content_id',contentId).order('season_number',{ascending:true});
+    if(error||!data?.length){browser.hidden=true;return}
+    currentSeriesSeasons=data; browser.hidden=false;
+    const tabs=$('#seasonTabs');
+    tabs.innerHTML=data.map((s,i)=>'<button class="season-tab '+(i===0?'active':'')+'" data-season="'+Number(s.id)+'">'+esc(s.title||('الموسم '+s.season_number))+'</button>').join('');
+    tabs.querySelectorAll('.season-tab').forEach((b,i)=>b.onclick=()=>showSeasonEpisodes(Number(b.dataset.season),b));
+    await showSeasonEpisodes(Number(data[0].id),tabs.querySelector('.season-tab'));
+  }catch(_){browser.hidden=true}
+}
+async function showSeasonEpisodes(seasonId,button){
+  document.querySelectorAll('.season-tab').forEach(b=>b.classList.remove('active'));if(button)button.classList.add('active');
+  const list=$('#episodeList');if(!list)return;
+  list.innerHTML='<p class="muted">جاري تحميل الحلقات...</p>';
+  try{
+    const {data,error}=await vipClient.from('vip_episodes').select('*').eq('season_id',seasonId).eq('published',true).order('episode_number',{ascending:true});
+    if(error||!data?.length){list.innerHTML='<p class="muted">لا توجد حلقات منشورة في هذا الموسم حالياً.</p>';return}
+    list.innerHTML=data.map(e=>'<div class="episode-row"><span class="episode-number">'+Number(e.episode_number)+'</span><div class="episode-info"><strong>'+esc(e.title)+'</strong><small>'+(e.duration_seconds?formatDuration(e.duration_seconds)+' • ':'')+'👁 '+Number(e.view_count||0).toLocaleString('ar-SA')+'</small></div><button class="episode-play" onclick="playEpisode('+Number(e.id)+')">▶ تشغيل</button></div>').join('');
+  }catch(_){list.innerHTML='<p class="muted">تعذر تحميل الحلقات حالياً.</p>'}
+}
+function formatDuration(sec){const s=Math.max(0,Number(sec)||0),h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return h?(h+':'+String(m).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0')):(m+':'+String(Math.floor(s%60)).padStart(2,'0'))}
+async function recordEpisodeView(ep){
+  if(!vipClient||!ep?.id)return;
+  const key='vip-episode-view-'+ep.id,now=Date.now(),last=Number(localStorage.getItem(key)||0);
+  if(last&&now-last<86400000)return;
+  try{const {data,error}=await vipClient.rpc('record_episode_view',{p_episode_id:ep.id});if(!error){localStorage.setItem(key,String(now));ep.view_count=Number(data||0)}}catch(_){}
+}
+function episodePlayerMarkup(ep){
+  const video=normalizeUrl(ep.video_url),embed=normalizeUrl(ep.embed_url),poster=normalizeUrl(ep.poster);
+  if(embed)return '<div class="vip-player embed-player"><iframe class="site-frame" src="'+esc(embed)+'" title="'+esc(ep.title)+'" loading="eager" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>';
+  if(video){const type=mediaType(video);return '<div class="vip-player"><video id="vipVideo" class="site-video" controls playsinline preload="metadata" poster="'+esc(poster)+'"><source src="'+esc(video)+'"'+(type?' type="'+esc(type)+'"':'')+'><p>المتصفح لا يدعم تشغيل الفيديو.</p></video></div>'}
+  return '<div class="player-empty"><div class="player-icon">▶</div><h3>لا يوجد مصدر تشغيل</h3><p>هذه الحلقة لا تحتوي حالياً على MP4/WebM أو Embed رسمي.</p></div>';
+}
+function setupEpisodePlayer(ep){
+  const v=$('#vipVideo');if(!v)return;
+  const key=episodeResumeKey(ep.id);
+  v.addEventListener('loadedmetadata',()=>{const saved=Number(localStorage.getItem(key)||0);if(saved>10&&saved<v.duration-5){try{v.currentTime=saved}catch(_){}}});
+  v.addEventListener('timeupdate',()=>{if(v.currentTime>10&&!v.ended){const p=Math.floor(v.currentTime);localStorage.setItem(key,String(p))}});
+  v.addEventListener('ended',()=>localStorage.removeItem(key));
+}
+window.playEpisode=async id=>{
+  let ep=null;
+  try{const {data}=await vipClient.from('vip_episodes').select('*').eq('id',id).eq('published',true).maybeSingle();ep=data}catch(_){}
+  if(!ep)return;
+  currentEpisode=ep;
+  $('#playerTitle').textContent=ep.title||'';
+  $('#playerMeta').textContent=(ep.duration_seconds?formatDuration(ep.duration_seconds)+'  |  ':'')+(ep.license||'الترخيص غير المحدد')+'  |  👁 '+Number(ep.view_count||0).toLocaleString('ar-SA')+' مشاهدة';
+  $('#playerDesc').textContent=ep.description||'';
+  $('#playerSource').textContent=ep.source?'المصدر: '+ep.source:'';
+  $('#playerStage').innerHTML=episodePlayerMarkup(ep);
+  $('#playerModal').classList.add('show');document.body.classList.add('player-open');
+  setupEpisodePlayer(ep);await recordEpisodeView(ep);
+};
+const originalShowDetails=window.showDetails;
+window.showDetails=async id=>{
+  originalShowDetails(id);
+  const x=all.find(v=>Number(v.id)===Number(id));
+  const browser=$('#seriesBrowser');
+  if(browser)browser.hidden=true;
+  if(x?.type==='series'&&vipClient)await loadSeriesSeasons(x.id);
+};
+
 renderAll();setupAccountButton();loadContent();
