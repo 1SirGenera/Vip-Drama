@@ -31,8 +31,9 @@ function renderRightsRequests(){
   const r=$('#rightsRows'); if(!r)return;
   r.innerHTML=rightsRequests.map(x=>{
     const proof=x.license_url||x.source_url;
-    const cls=x.rights_status==='verified'?'live':x.rights_status==='rejected'?'draft':'draft';
-    return '<tr><td><strong>'+esc(x.title)+'</strong></td><td>'+rightsTypeName(x.content_type)+'</td><td>'+esc(x.collection==='Yemeni Series'?'🇾🇪 مسلسلات يمنية':x.collection==='Yemeni Theater'?'🇾🇪 مسرحيات يمنية':x.collection||'—')+'</td><td><span class="status-pill '+cls+'">'+esc(rightsStatusName(x.rights_status))+'</span></td><td>'+esc(x.rights_holder||'—')+'</td><td>'+(proof?'<a href="'+esc(proof)+'" target="_blank" rel="noopener">فتح</a>':'—')+'</td><td><div class="actions"><button class="btn small ghost" onclick="editRightsRequest('+Number(x.id)+')">تعديل</button><button class="btn small danger" onclick="removeRightsRequest('+Number(x.id)+')">حذف</button></div></td></tr>';
+    const cls=x.rights_status==='verified'?'live':'draft';
+    const publishBtn=x.rights_status==='verified' ? '<button class="btn small primary" onclick="moveRightsToLibrary('+Number(x.id)+')">إلى المكتبة</button>' : '';
+    return '<tr><td><strong>'+esc(x.title)+'</strong></td><td>'+rightsTypeName(x.content_type)+'</td><td>'+esc(x.collection==='Yemeni Series'?'🇾🇪 مسلسلات يمنية':x.collection==='Yemeni Theater'?'🇾🇪 مسرحيات يمنية':x.collection||'—')+'</td><td><span class="status-pill '+cls+'">'+esc(rightsStatusName(x.rights_status))+'</span></td><td>'+esc(x.rights_holder||'—')+'</td><td>'+(proof?'<a href="'+esc(proof)+'" target="_blank" rel="noopener">فتح</a>':'—')+'</td><td><div class="actions">'+publishBtn+'<button class="btn small ghost" onclick="editRightsRequest('+Number(x.id)+')">تعديل</button><button class="btn small danger" onclick="removeRightsRequest('+Number(x.id)+')">حذف</button></div></td></tr>';
   }).join('')||'<tr><td colspan="7" class="muted">لا توجد طلبات حقوق حالياً.</td></tr>';
 }
 function resetRightsForm(){
@@ -42,6 +43,25 @@ function setRightsForm(x){
   $('#rightsRequestId').value=x?.id||'';$('#rightsTitle').value=x?.title||'';$('#rightsType').value=x?.content_type||'series';$('#rightsYear').value=x?.production_year??'';$('#rightsOriginCountry').value=x?.origin_country||'';$('#rightsCollection').value=x?.collection||'';$('#rightsStatus').value=x?.rights_status||'pending';$('#rightsHolder').value=x?.rights_holder||'';$('#rightsTerritories').value=x?.territories||'Worldwide';$('#rightsSourceUrl').value=x?.source_url||'';$('#rightsLicenseUrl').value=x?.license_url||'';$('#rightsNotes').value=x?.notes||'';$('#rightsSave').textContent='حفظ التعديلات';$('#rightsCancel').classList.remove('hidden');document.querySelector('#rightsManager')?.scrollIntoView({behavior:'smooth'});
 }
 window.editRightsRequest=id=>{const x=rightsRequests.find(v=>Number(v.id)===Number(id));if(x)setRightsForm(x)};
+window.moveRightsToLibrary=async id=>{
+  const x=rightsRequests.find(v=>Number(v.id)===Number(id));
+  if(!x||x.rights_status!=='verified')return alert('يجب التحقق من الحقوق أولاً.');
+  if(!x.license_url&&!x.source_url)return alert('أضف رابط الترخيص أو مصدر الحقوق أولاً.');
+  const type=x.content_type==='theater'?'series':x.content_type==='other'?'movie':x.content_type;
+  const payload={
+    title:x.title,type,year:x.production_year||null,genre:'',rating:0,tag:'موثق',
+    description:x.notes||'',video_url:null,embed_url:null,watch_url:x.source_url||x.license_url,
+    license:x.license_url?'Licensed / Verified':'Source Verified',source:x.rights_holder||x.source_url||null,
+    origin_country:x.origin_country||null,collection:x.collection||null,license_url:x.license_url||x.source_url||null,
+    rights_holder:x.rights_holder||null,territories:x.territories||'Worldwide',published:false,
+    poster:'linear-gradient(145deg,#312e81,#db2777)'
+  };
+  const result=await client.from('vip_content').insert(payload).select('id').single();
+  if(result.error)return alert('تعذر نقل الطلب إلى المكتبة: '+result.error.message);
+  alert('تم إنشاء العنوان في المكتبة كمسودة. أضف رابط الفيديو/Embed الرسمي ثم انشره.');
+  await load();
+  await loadRightsRequests();
+};
 window.removeRightsRequest=async id=>{if(!confirm('هل تريد حذف طلب الحقوق نهائياً؟'))return;const {error}=await client.from('vip_rights_requests').delete().eq('id',id);if(error)return alert('تعذر حذف الطلب: '+error.message);resetRightsForm();await loadRightsRequests()};
 $('#rightsCancel').onclick=resetRightsForm;
 $('#rightsForm').onsubmit=async e=>{
