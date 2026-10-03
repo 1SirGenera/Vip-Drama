@@ -75,6 +75,12 @@ begin
     raise exception 'user_not_found';
   end if;
 
+  if exists (select 1 from public.vip_admins where user_id=target_id and role='owner')
+     and p_role <> 'owner'
+     and (select count(*) from public.vip_admins where role='owner') <= 1 then
+    raise exception 'cannot_remove_last_owner';
+  end if;
+
   insert into public.vip_admins(user_id, role)
   values (target_id, p_role)
   on conflict (user_id) do update
