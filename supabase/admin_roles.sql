@@ -3,10 +3,12 @@
 -- Existing administrators become owners on first run so the current project owner keeps access.
 
 alter table public.vip_admins
-  add column if not exists role text not null default 'admin'
+  add column if not exists role text not null default 'owner'
   check (role in ('owner','admin','editor','moderator','analyst'));
 
-update public.vip_admins set role='owner' where role='admin';
+-- Existing rows receive the temporary owner default above on first run.
+-- New administrators created after this migration default to the regular admin role.
+alter table public.vip_admins alter column role set default 'admin';
 
 create or replace function public.has_admin_role(required_roles text[])
 returns boolean
