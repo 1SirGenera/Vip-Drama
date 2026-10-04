@@ -29,7 +29,7 @@ function setPlayer(x){
  qs('#selectedChannel').textContent=x.name;
  if(x.embed_url){const f=document.createElement('iframe');f.src=x.embed_url;f.title=x.name;f.allow='autoplay; fullscreen; picture-in-picture';f.allowFullscreen=true;p.appendChild(f)}
  else if(x.stream_url){const v=document.createElement('video');v.controls=true.playsInline=true.autoplay=true.src=x.stream_url;p.appendChild(v)}
- else {const box=document.createElement('div');box.className='live-empty';const text=document.createElement('p');text.textContent='هذا المصدر لا يوفر رابط تشغيل مباشر داخل VIP Drama حالياً.';box.appendChild(text);if(x.source_url){const a=document.createElement('a');a.className='btn primary';a.href=x.source_url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='فتح المصدر الرسمي';box.appendChild(a)}p.appendChild(box)}
+ else {const box=document.createElement('div');box.className='live-empty';const text=document.createElement('p');text.textContent='هذا المصدر الرسمي لا يتيح تضمين البث داخل VIP Drama حالياً.';box.appendChild(text);p.appendChild(box)}
 }
 function selectChannel(id){const all=[...channels,...OFFICIAL_LIVE_SOURCES];selected=all.find(x=>String(x.id)===String(id))||null;setPlayer(selected);drawChannels()}
 function statBar(a,b){const total=Math.max(1,Number(a||0)+Number(b||0));return '<div class="stat-line"><b>'+Number(a||0)+'%</b><div><span style="width:'+Math.min(100,Number(a||0)/total*100)+'%"></span></div><b>'+Number(b||0)+'%</b></div>'}
