@@ -22,9 +22,15 @@ function run(){
     stats.innerHTML=[['🎬',movies,'أفلام'],['📺',series,'مسلسلات'],['✨',anime,'أنمي ورسوم'],['📚',a.length,'إجمالي الأعمال']].map(v=>'<div class="discovery-stat"><b>'+v[0]+'</b><strong>'+v[1]+'</strong><span>'+v[2]+'</span></div>').join('');
   }
   function card(x){
-    const poster=x.poster||'';
-    const safe=esc(x.title||'بدون عنوان'), year=esc(x.year||''), genre=esc(x.genre||'');
-    return '<article class="card discovery-card" data-id="'+Number(x.id||0)+'"><button class="poster discovery-poster" type="button" onclick="showDetails('+Number(x.id||0)+')" aria-label="عرض '+safe+'">'+(poster?'<img class="poster-image" loading="lazy" src="'+esc(poster)+'" alt="'+safe+'" onerror="this.style.display=\'none\'">':'')+'<span class="poster-shade"></span><span class="tag">'+esc(x.tag||'VIP')}</span><span class="rating">★ '+esc(x.rating||'—')+'</span><span class="poster-title">'+safe+'</span></button><div class="card-info"><div><h3>'+safe+'</h3><p>'+year+(genre?' • '+genre:'')+'</p></div><button class="play" type="button" onclick="showDetails('+Number(x.id||0)+')" aria-label="مشاهدة">▶</button></div></article>';
+    const article=document.createElement('article');article.className='card discovery-card';article.dataset.id=String(Number(x.id||0));
+    const poster=document.createElement('button');poster.type='button';poster.className='poster discovery-poster';poster.setAttribute('aria-label','عرض '+(x.title||'بدون عنوان'));poster.onclick=()=>window.showDetails&&window.showDetails(Number(x.id||0));
+    if(x.poster){const img=document.createElement('img');img.className='poster-image';img.loading='lazy';img.src=x.poster;img.alt=x.title||'';img.onerror=()=>img.remove();poster.appendChild(img)}
+    const shade=document.createElement('span');shade.className='poster-shade';poster.appendChild(shade);
+    const tag=document.createElement('span');tag.className='tag';tag.textContent=x.tag||'VIP';poster.appendChild(tag);
+    const rating=document.createElement('span');rating.className='rating';rating.textContent='★ '+(x.rating||'—');poster.appendChild(rating);
+    const pt=document.createElement('span');pt.className='poster-title';pt.textContent=x.title||'بدون عنوان';poster.appendChild(pt);article.appendChild(poster);
+    const info=document.createElement('div');info.className='card-info';const wrap=document.createElement('div');const h=document.createElement('h3');h.textContent=x.title||'بدون عنوان';const p=document.createElement('p');p.textContent=(x.year||'')+(x.genre?' • '+x.genre:'');wrap.append(h,p);
+    const play=document.createElement('button');play.type='button';play.className='play';play.textContent='▶';play.setAttribute('aria-label','مشاهدة');play.onclick=()=>window.showDetails&&window.showDetails(Number(x.id||0));info.append(wrap,play);article.appendChild(info);return article;
   }
   function render(){
     const q=($('#smartSearch').value||'').trim().toLowerCase(), type=$('#smartType').value, sort=$('#smartSort').value;
