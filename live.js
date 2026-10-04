@@ -16,9 +16,12 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&
 function categoryName(x){return({general:'عام',news:'أخبار',sports:'رياضة',entertainment:'ترفيه',kids:'أطفال',religious:'ديني',other:'أخرى'}[x]||'أخرى')}
 function channelCard(x){
  const b=document.createElement('button');b.type='button';b.className='live-channel'+(selected&&selected.id===x.id?' active':'');b.onclick=()=>selectChannel(x.id);
- const logo=document.createElement('img');logo.className='live-logo';logo.alt='';logo.src=x.logo_url||'';logo.onerror=()=>{logo.remove();const s=document.createElement('span');s.className='live-logo';s.textContent='TV';b.prepend(s)};
- const info=document.createElement('span'),strong=document.createElement('strong'),small=document.createElement('small');strong.textContent=x.name;small.textContent=categoryName(x.category)+(x.language?' • '+x.language:'');info.append(strong,small);
- const st=document.createElement('span');st.className='live-status '+(x.is_live?'':'off');st.textContent=x.is_live?'LIVE':'متاح';b.append(logo,info,st);return b;
+ let logo;
+ if(x.logo_url){logo=document.createElement('img');logo.className='live-logo';logo.alt='';logo.src=x.logo_url;logo.onerror=()=>{logo.replaceWith(makeLogo())}}
+ else logo=makeLogo();
+ const info=document.createElement('span'),strong=document.createElement('strong'),small=document.createElement('small');strong.textContent=x.name;small.textContent=(x.is_live?'مباشر':'مصدر رسمي')+' • '+categoryName(x.category)+(x.language?' • '+x.language:'');info.append(strong,small);
+ const st=document.createElement('span');st.className='live-status '+(x.is_live?'':'off');st.textContent=x.is_live?'LIVE':'رسمي';b.append(logo,info,st);return b;
+ function makeLogo(){const s=document.createElement('span');s.className='live-logo';s.textContent='TV';return s}
 }
 function setPlayer(x){
  const p=qs('#livePlayer');p.replaceChildren();
