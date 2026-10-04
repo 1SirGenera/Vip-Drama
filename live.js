@@ -2,8 +2,12 @@
 const qs=s=>document.querySelector(s);
 let client=null,channels=[],matches=[],selected=null,activeTab='all';
 const OFFICIAL_LIVE_SOURCES=[
- {id:'official-aj',name:'الجزيرة الإنجليزية — مباشر',category:'news',language:'en',source_url:'https://www.aljazeera.com/video/live',description:'البث المباشر الرسمي من الجزيرة الإنجليزية.'},
- {id:'official-nasa',name:'NASA+ — بث مباشر',category:'general',language:'en',source_url:'https://plus.nasa.gov/',description:'منصة NASA الرسمية للبث والفعاليات المباشرة.'},
+ {id:'official-aj-ar',name:'الجزيرة — مباشر',category:'news',language:'ar',source_url:'https://www.aljazeera.net/video/live',description:'البث الحي الرسمي لقناة الجزيرة.'},
+ {id:'official-aj2',name:'الجزيرة 2 — مباشر',category:'news',language:'ar',source_url:'https://www.aljazeera.net/video/live/الجزيرة-2',description:'البث الحي الرسمي للجزيرة 2.'},
+ {id:'official-aj-mubasher',name:'الجزيرة مباشر',category:'news',language:'ar',source_url:'https://www.aljazeera.net/video/live/الجزيرة-مباشر',description:'البث الحي الرسمي للجزيرة مباشر.'},
+ {id:'official-aj-doc',name:'الجزيرة الوثائقية — مباشر',category:'entertainment',language:'ar',source_url:'https://www.aljazeera.net/video/live/الجزيرة-الوثائقية',description:'البث الحي الرسمي للجزيرة الوثائقية.'},
+ {id:'official-aj-en',name:'Al Jazeera English — Live',category:'news',language:'en',source_url:'https://www.aljazeera.com/video/live',description:'البث المباشر الرسمي من الجزيرة الإنجليزية.'},
+ {id:'official-nasa',name:'NASA+ — Live',category:'general',language:'en',source_url:'https://plus.nasa.gov/',description:'منصة NASA الرسمية للبث والفعاليات المباشرة.'},
  {id:'official-redbull',name:'Red Bull TV — Live Events',category:'sports',language:'multi',source_url:'https://www.redbull.com/int-en/live-events',description:'الأحداث الرياضية المباشرة الرسمية على Red Bull TV.'},
  {id:'official-uefa',name:'UEFA.tv — Live',category:'sports',language:'multi',source_url:'https://www.uefa.com/uefatv/',description:'منصة UEFA الرسمية؛ التوفر يختلف حسب البطولة والمنطقة.'}
 ];
