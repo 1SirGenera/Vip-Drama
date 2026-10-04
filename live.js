@@ -1,6 +1,6 @@
 (()=>{'use strict';
 const qs=s=>document.querySelector(s);
-let client=null,channels=[],matches=[],selected=null;
+let client=null,channels=[],matches=[],selected=null,activeTab='all';
 const stateName=s=>({scheduled:'قادمة',live:'مباشر',halftime:'استراحة',finished:'انتهت',postponed:'مؤجلة'}[s]||s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 function categoryName(x){return({general:'عام',news:'أخبار',sports:'رياضة',entertainment:'ترفيه',kids:'أطفال',religious:'ديني',other:'أخرى'}[x]||'أخرى')}
@@ -27,7 +27,7 @@ function matchCard(x){
  c.onclick=()=>openMatch(x);return c;
 }
 function openMatch(x){const p=qs('#livePlayer');if(x.embed_url||x.stream_url){setPlayer({id:'m'+x.id,name:x.home_team+' × '+x.away_team,embed_url:x.embed_url,stream_url:x.stream_url});}window.scrollTo({top:0,behavior:'smooth'})}
-function drawChannels(){const el=qs('#channelList');el.replaceChildren(...channels.map(channelCard));if(!selected&&channels[0])selectChannel(channels[0].id)}
+function drawChannels(){const el=qs('#channelList');const filtered=activeTab==='all'?channels:channels.filter(x=>x.category===activeTab);el.replaceChildren(...filtered.map(channelCard));if(selected&&!filtered.some(x=>Number(x.id)===Number(selected.id)))selected=null;if(!selected&&filtered[0])selectChannel(filtered[0].id);if(!filtered.length)el.innerHTML='<div class="live-empty">لا توجد قنوات منشورة في هذا التصنيف حالياً.</div>'}
 function drawMatches(){const el=qs('#matchGrid');el.replaceChildren(...matches.map(matchCard));qs('#matchCount').textContent=String(matches.length)}
 async function load(){
  if(!window.supabase||!window.SUPABASE_URL||!window.SUPABASE_PUBLISHABLE_KEY){qs('#liveMessage').textContent='إعداد Supabase غير متوفر.';return}
@@ -36,5 +36,7 @@ async function load(){
  if(c.error||m.error){qs('#liveMessage').textContent='تعذر تحميل مركز البث حالياً.';return}
  channels=c.data||[];matches=m.data||[];drawChannels();drawMatches();
 }
-load();
+document.querySelectorAll('.live-tab').forEach(btn=>btn.addEventListener('click',()=>{activeTab=btn.dataset.tab||'all';document.querySelectorAll('.live-tab').forEach(x=>x.classList.toggle('active',x===btn));drawChannels()}));
+function subscribeRealtime(){if(!client)return;client.channel('vip-live-center').on('postgres_changes',{event:'*',schema:'public',table:'vip_live_channels'},load).on('postgres_changes',{event:'*',schema:'public',table:'vip_live_matches'},load).subscribe()}
+load().then(subscribeRealtime);
 })();
