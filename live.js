@@ -1,6 +1,12 @@
 (()=>{'use strict';
 const qs=s=>document.querySelector(s);
 let client=null,channels=[],matches=[],selected=null,activeTab='all';
+const OFFICIAL_LIVE_SOURCES=[
+ {id:'official-aj',name:'الجزيرة الإنجليزية — مباشر',category:'news',language:'en',source_url:'https://www.aljazeera.com/video/live',description:'البث المباشر الرسمي من الجزيرة الإنجليزية.'},
+ {id:'official-nasa',name:'NASA+ — بث مباشر',category:'general',language:'en',source_url:'https://plus.nasa.gov/',description:'منصة NASA الرسمية للبث والفعاليات المباشرة.'},
+ {id:'official-redbull',name:'Red Bull TV — Live Events',category:'sports',language:'multi',source_url:'https://www.redbull.com/int-en/live-events',description:'الأحداث الرياضية المباشرة الرسمية على Red Bull TV.'},
+ {id:'official-uefa',name:'UEFA.tv — Live',category:'sports',language:'multi',source_url:'https://www.uefa.com/uefatv/',description:'منصة UEFA الرسمية؛ التوفر يختلف حسب البطولة والمنطقة.'}
+];
 const stateName=s=>({scheduled:'قادمة',live:'مباشر',halftime:'استراحة',finished:'انتهت',postponed:'مؤجلة'}[s]||s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 function categoryName(x){return({general:'عام',news:'أخبار',sports:'رياضة',entertainment:'ترفيه',kids:'أطفال',religious:'ديني',other:'أخرى'}[x]||'أخرى')}
@@ -16,9 +22,9 @@ function setPlayer(x){
  qs('#selectedChannel').textContent=x.name;
  if(x.embed_url){const f=document.createElement('iframe');f.src=x.embed_url;f.title=x.name;f.allow='autoplay; fullscreen; picture-in-picture';f.allowFullscreen=true;p.appendChild(f)}
  else if(x.stream_url){const v=document.createElement('video');v.controls=true.playsInline=true.autoplay=true.src=x.stream_url;p.appendChild(v)}
- else p.innerHTML='<div class="live-empty">هذه القناة منشورة بدون رابط تشغيل حالياً.</div>';
+ else {const box=document.createElement('div');box.className='live-empty';const text=document.createElement('p');text.textContent='هذا المصدر لا يوفر رابط تشغيل مباشر داخل VIP Drama حالياً.';box.appendChild(text);if(x.source_url){const a=document.createElement('a');a.className='btn primary';a.href=x.source_url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='فتح المصدر الرسمي';box.appendChild(a)}p.appendChild(box)}
 }
-function selectChannel(id){selected=channels.find(x=>Number(x.id)===Number(id))||null;setPlayer(selected);drawChannels()}
+function selectChannel(id){const all=[...channels,...OFFICIAL_LIVE_SOURCES];selected=all.find(x=>String(x.id)===String(id))||null;setPlayer(selected);drawChannels()}
 function statBar(a,b){const total=Math.max(1,Number(a||0)+Number(b||0));return '<div class="stat-line"><b>'+Number(a||0)+'%</b><div><span style="width:'+Math.min(100,Number(a||0)/total*100)+'%"></span></div><b>'+Number(b||0)+'%</b></div>'}
 function matchCard(x){
  const c=document.createElement('article');c.className='match-card';
@@ -27,7 +33,7 @@ function matchCard(x){
  c.onclick=()=>openMatch(x);return c;
 }
 function openMatch(x){const p=qs('#livePlayer');if(x.embed_url||x.stream_url){setPlayer({id:'m'+x.id,name:x.home_team+' × '+x.away_team,embed_url:x.embed_url,stream_url:x.stream_url});}window.scrollTo({top:0,behavior:'smooth'})}
-function drawChannels(){const el=qs('#channelList');const filtered=activeTab==='all'?channels:channels.filter(x=>x.category===activeTab);el.replaceChildren(...filtered.map(channelCard));if(selected&&!filtered.some(x=>Number(x.id)===Number(selected.id)))selected=null;if(!selected&&filtered[0])selectChannel(filtered[0].id);if(!filtered.length)el.innerHTML='<div class="live-empty">لا توجد قنوات منشورة في هذا التصنيف حالياً.</div>'}
+function drawChannels(){const all=[...channels,...OFFICIAL_LIVE_SOURCES];const el=qs('#channelList');const filtered=activeTab==='all'?all:all.filter(x=>x.category===activeTab);el.replaceChildren(...filtered.map(channelCard));if(selected&&!filtered.some(x=>String(x.id)===String(selected.id)))selected=null;if(!selected&&filtered[0])selectChannel(filtered[0].id);if(!filtered.length)el.innerHTML='<div class="live-empty">لا توجد قنوات أو مصادر مباشرة في هذا التصنيف حالياً.</div>'}
 function drawMatches(){const el=qs('#matchGrid');el.replaceChildren(...matches.map(matchCard));qs('#matchCount').textContent=String(matches.length)}
 async function load(){
  if(!window.supabase||!window.SUPABASE_URL||!window.SUPABASE_PUBLISHABLE_KEY){qs('#liveMessage').textContent='إعداد Supabase غير متوفر.';return}
