@@ -15,11 +15,19 @@ function setBusy(form, busy) {
   form.querySelectorAll("button").forEach(b => b.disabled = busy);
 }
 
+function getAuthRedirectUrl() {
+  const base = String(window.VIP_SITE_URL || window.location.origin).replace(/\/$/, "");
+  return `${base}/login.html?verified=1`;
+}
+
 async function registerUser(email, password, name) {
   const { data, error } = await supabaseClient.auth.signUp({
     email,
     password,
-    options: { data: { display_name: name } }
+    options: {
+      data: { display_name: name },
+      emailRedirectTo: getAuthRedirectUrl()
+    }
   });
   if (error) throw error;
   return data;
@@ -27,6 +35,16 @@ async function registerUser(email, password, name) {
 
 async function loginUser(email, password) {
   const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  return data;
+}
+
+async function resendConfirmation(email) {
+  const { data, error } = await supabaseClient.auth.resend({
+    type: "signup",
+    email,
+    options: { emailRedirectTo: getAuthRedirectUrl() }
+  });
   if (error) throw error;
   return data;
 }
@@ -44,11 +62,26 @@ async function bootAuthPage() {
   const switchRegister = document.querySelector("#switchRegister");
   const switchLogin = document.querySelector("#switchLogin");
   const logoutBtn = document.querySelector("#logoutBtn");
+  const resendBtn = document.querySelector("#resendConfirmation");
+  const verified = new URLSearchParams(location.search).get("verified");
   const accountBox = document.querySelector("#accountBox");
   const accountEmail = document.querySelector("#accountEmail");
 
   const configured = !window.SUPABASE_URL.includes("YOUR-PROJECT") && !window.SUPABASE_PUBLISHABLE_KEY.includes("YOUR-PUBLISHABLE");
   if (!configured) showAuthMessage("أضف بيانات Supabase في ملف supabase-config.js أولاً.", "error");
+
+  if (verified === "1") showAuthMessage("تم تأكيد بريدك الإلكتروني بنجاح. يمكنك الآن تسجيل الدخول.", "success");
+  const authError = new URLSearchParams(location.hash.slice(1)).get("error_description");
+  if (authError) showAuthMessage(decodeURIComponent(authError.replace(/\+/g, " ")), "error");
+
+  resendBtn?.addEventListener("click", async () => {
+    const email = document.querySelector("#resendEmail")?.value.trim();
+    if (!email) { showAuthMessage("اكتب بريدك الإلكتروني أولاً.", "error"); return; }
+    setBusy(resendBtn.form || document, true);
+    try { await resendConfirmation(email); showAuthMessage("تم إرسال رابط تأكيد جديد إلى بريدك الإلكتروني.", "success"); }
+    catch (err) { showAuthMessage(err.message || "تعذر إرسال رابط التأكيد.", "error"); }
+    finally { setBusy(resendBtn.form || document, false); }
+  });
 
   switchRegister?.addEventListener("click", e => { e.preventDefault(); loginBox.hidden=true; registerBox.hidden=false; showAuthMessage(""); });
   switchLogin?.addEventListener("click", e => { e.preventDefault(); registerBox.hidden=true; loginBox.hidden=false; showAuthMessage(""); });
@@ -85,5 +118,5 @@ async function bootAuthPage() {
   }
 }
 
-window.VIP_AUTH = { client: supabaseClient, registerUser, loginUser, logoutUser };
+window.VIP_AUTH = { client: supabaseClient, registerUser, loginUser, resendConfirmation, logoutUser };
 document.addEventListener("DOMContentLoaded", bootAuthPage);
