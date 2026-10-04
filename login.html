@@ -17,6 +17,10 @@
         <button class="btn primary auth-submit" type="submit">تسجيل الدخول</button>
       </form>
       <p class="auth-switch">ليس لديك حساب؟ <a href="#" id="switchRegister">إنشاء حساب</a></p>
+      <form id="resendForm" class="auth-form compact-auth-form" onsubmit="return false;">
+        <label>إعادة إرسال رابط التأكيد<input id="resendEmail" type="email" autocomplete="email" placeholder="name@gmail.com"></label>
+        <button id="resendConfirmation" class="btn ghost auth-submit" type="button">إرسال رابط التأكيد</button>
+      </form>
     </div>
     <div id="registerBox" hidden>
       <span class="eyebrow">NEW ACCOUNT</span><h1>إنشاء حساب</h1><p class="auth-sub">أنشئ حسابك في VIP Drama.</p>
