@@ -1,0 +1,44 @@
+(()=>{
+'use strict';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+function run(){
+  const main=$('#home'); if(!main||document.querySelector('#vipDiscovery')) return;
+  const latest=$('#latest'); if(!latest) return;
+  const hub=document.createElement('section');
+  hub.id='vipDiscovery'; hub.className='section vip-discovery';
+  hub.innerHTML='<div class="discovery-shell">'+
+    '<div class="discovery-top"><div><span class="eyebrow">VIP DISCOVERY</span><h2>اكتشف مكتبتك بطريقة أذكى</h2><p class="muted">بحث سريع، ترتيب، فلاتر، ومشاهدة عشوائية — مع الحفاظ على كل أقسام VIP Drama الحالية.</p></div>'+
+    '<button id="randomPick" class="btn primary" type="button">🎲 اختر لي شيئًا</button></div>'+
+    '<div class="discovery-stats" id="discoveryStats"></div>'+
+    '<div class="discovery-controls"><input id="smartSearch" type="search" placeholder="ابحث باسم العمل أو النوع أو السنة..." aria-label="بحث ذكي"><select id="smartType"><option value="all">كل الأنواع</option><option value="movie">أفلام</option><option value="series">مسلسلات</option><option value="anime">أنمي ورسوم</option></select><select id="smartSort"><option value="new">الأحدث أولاً</option><option value="old">الأقدم أولاً</option><option value="rating">الأعلى تقييماً</option><option value="views">الأكثر مشاهدة</option><option value="az">أبجدياً</option></select><button id="clearDiscovery" class="btn ghost" type="button">مسح</button></div>'+
+    '<div id="discoveryResults" class="grid discovery-grid"></div>'+
+    '<p id="discoveryEmpty" class="muted discovery-empty" hidden>لا توجد نتائج مطابقة. جرّب كلمة أخرى أو امسح الفلاتر.</p></div>';
+  main.insertBefore(hub,latest);
+  const stats=$('#discoveryStats');
+  const getItems=()=>Array.isArray(window.VIP_CONTENT)?window.VIP_CONTENT.slice():[];
+  function drawStats(){
+    const a=getItems(), movies=a.filter(x=>String(x.type).toLowerCase()==='movie').length, series=a.filter(x=>String(x.type).toLowerCase()==='series').length, anime=a.filter(x=>String(x.type).toLowerCase()==='anime').length;
+    stats.innerHTML=[['🎬',movies,'أفلام'],['📺',series,'مسلسلات'],['✨',anime,'أنمي ورسوم'],['📚',a.length,'إجمالي الأعمال']].map(v=>'<div class="discovery-stat"><b>'+v[0]+'</b><strong>'+v[1]+'</strong><span>'+v[2]+'</span></div>').join('');
+  }
+  function card(x){
+    const poster=x.poster||'';
+    const safe=esc(x.title||'بدون عنوان'), year=esc(x.year||''), genre=esc(x.genre||'');
+    return '<article class="card discovery-card" data-id="'+Number(x.id||0)+'"><button class="poster discovery-poster" type="button" onclick="showDetails('+Number(x.id||0)+')" aria-label="عرض '+safe+'">'+(poster?'<img class="poster-image" loading="lazy" src="'+esc(poster)+'" alt="'+safe+'" onerror="this.style.display=\'none\'">':'')+'<span class="poster-shade"></span><span class="tag">'+esc(x.tag||'VIP')}</span><span class="rating">★ '+esc(x.rating||'—')+'</span><span class="poster-title">'+safe+'</span></button><div class="card-info"><div><h3>'+safe+'</h3><p>'+year+(genre?' • '+genre:'')+'</p></div><button class="play" type="button" onclick="showDetails('+Number(x.id||0)+')" aria-label="مشاهدة">▶</button></div></article>';
+  }
+  function render(){
+    const q=($('#smartSearch').value||'').trim().toLowerCase(), type=$('#smartType').value, sort=$('#smartSort').value;
+    let a=getItems().filter(x=>(type==='all'||String(x.type).toLowerCase()===type)&&(!q||[x.title,x.genre,x.tag,x.year,x.origin_country,x.collection].join(' ').toLowerCase().includes(q)));
+    a.sort((x,y)=>sort==='old'?Number(x.year||0)-Number(y.year||0):sort==='rating'?Number(y.rating||0)-Number(x.rating||0):sort==='views'?Number(y.view_count||0)-Number(x.view_count||0):sort==='az'?String(x.title||'').localeCompare(String(y.title||''),'ar'):Number(y.year||0)-Number(x.year||0));
+    $('#discoveryResults').innerHTML=a.slice(0,24).map(card).join('');
+    $('#discoveryEmpty').hidden=a.length>0;
+  }
+  ['smartSearch','smartType','smartSort'].forEach(id=>$('#'+id).addEventListener('input',render));
+  $('#clearDiscovery').onclick=()=>{$('#smartSearch').value='';$('#smartType').value='all';$('#smartSort').value='new';render();};
+  $('#randomPick').onclick=()=>{const a=getItems();if(!a.length)return;const x=a[Math.floor(Math.random()*a.length)];if(typeof window.showDetails==='function')window.showDetails(x.id);};
+  drawStats(); render();
+  const oldRender=window.renderAll;
+  if(typeof oldRender==='function') window.renderAll=new Proxy(oldRender,{apply(t,th,args){const r=Reflect.apply(t,th,args);drawStats();render();return r;}});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
+})();
