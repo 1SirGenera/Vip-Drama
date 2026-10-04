@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const esc=s=>String(s??'').split('&').join('&amp;').split('<').join('&lt;').split('>').join('&gt;').split('"').join('&quot;').split("'").join('&#39;');
 const items=()=>Array.isArray(window.VIP_CONTENT)?window.VIP_CONTENT.filter(x=>x&&x.published!==false):[];
 function card(x){
   const id=Number(x.id||0), title=esc(x.title||'بدون عنوان'), poster=esc(x.poster||'');
