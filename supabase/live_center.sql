@@ -105,3 +105,17 @@ with check (exists (select 1 from public.vip_admins a where a.user_id=(select au
 
 grant usage, select on sequence public.vip_live_channels_id_seq to authenticated;
 grant usage, select on sequence public.vip_live_matches_id_seq to authenticated;
+
+
+-- Enable Realtime for live channel/match updates when the project uses the standard publication.
+do $$
+begin
+  if not exists (select 1 from pg_publication_tables where pubname='supabase_realtime' and schemaname='public' and tablename='vip_live_channels') then
+    alter publication supabase_realtime add table public.vip_live_channels;
+  end if;
+  if not exists (select 1 from pg_publication_tables where pubname='supabase_realtime' and schemaname='public' and tablename='vip_live_matches') then
+    alter publication supabase_realtime add table public.vip_live_matches;
+  end if;
+exception when undefined_object then
+  null;
+end $$;
